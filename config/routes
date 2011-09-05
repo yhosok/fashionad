@@ -1,0 +1,17 @@
+/static StaticR Static getStatic
+/auth   AuthR   Auth   getAuth
+
+/favicon.ico FaviconR GET
+/robots.txt RobotsR GET
+
+/ RootR GET
+
+/coordinations CoordinationsR GET
+/coordination/#CoordinationId CoordinationR GET POST
+/coordinations/add AddCoordinationR GET POST
+/coordinations/del/#CoordinationId DelCoordinationR POST
+
+/items/#CoordinationId ItemsR GET
+/item/#CoordinationId/#ItemId ItemR GET POST
+/items/add/#CoordinationId AddItemR GET POST
+/items/del/#ItemId DelItemR POST

@@ -1,0 +1,13 @@
+$if null cos
+    <p>There are no coordinations listings.
+$else
+    <p>coordinations list.
+    <table>
+      $forall c <- cos
+        <tr>
+          <td>
+            <a href="@{CoordinationR (fst c)}">#{coordinationTitle $ snd c}
+
+<p>
+    <a href="@{AddCoordinationR}">Add New Coordination
+

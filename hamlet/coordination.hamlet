@@ -1,0 +1,23 @@
+<h2>Task Info
+<form method="post">
+    <table>
+        ^{form}
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Update">
+<h2>Items
+<table>
+    $forall i <- items
+      <tr>
+        <td>#{itemName $snd i}
+        <td>#{show $ itemKind $ snd i}
+        <td>
+          $maybe ip <- itemPrice $ snd i
+            #{show ip}
+<h2>Add Items
+<form method="post" action=@{AddItemR cid}>
+    <table>
+        ^{itemForm}
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Update">
