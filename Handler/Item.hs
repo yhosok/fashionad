@@ -46,9 +46,14 @@ getAddItemR cid = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
 
-
 postAddItemR :: CoordinationId -> Handler ()
 postAddItemR = getAddItemR
 
-postDelItemR :: ItemId -> Handler RepHtml
-postDelItemR = undefined
+postDelItemR :: CoordinationId -> ItemId -> Handler RepHtml
+postDelItemR cid iid = do
+  (uid, u) <- requireAuth
+  --i <- runDB $ get iid
+  --((_,form),_) <- runFormPost $ itemForm (itemCoordination i) i
+  runDB $ deleteWhere [ItemId ==. iid]
+  redirect RedirectTemporary $ CoordinationR cid
+  
