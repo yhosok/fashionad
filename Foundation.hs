@@ -40,6 +40,8 @@ import Text.Blaze.Renderer.Utf8 (renderHtml)
 import Text.Hamlet (shamlet)
 import Text.Shakespeare.Text (stext)
 
+import Yesod.Form.Jquery
+
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -225,3 +227,5 @@ Thank you
 
 instance RenderMessage FashionAd FormMessage where
     renderMessage _ _ = defaultFormMessage
+    
+instance YesodJquery FashionAd

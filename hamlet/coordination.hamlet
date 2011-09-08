@@ -1,7 +1,17 @@
-<h2>Coordination 
-<form method="post">
+<script>
+   var max_size = 120;
+   $('.resize').resize(max_size);
+</script>
+<h2>Coordination
+<form method="post" enctype=multipart/form-data>
     <table>
+        <tr>
+            <td>
+                <img .resize src=@{CoordinationImgR cid}>
         ^{form}
+        <tr>
+            <td>
+                <input type="file" name="coimg" size="60">
         <tr>
             <td colspan="2">
                 <input type="submit" value="Update">
