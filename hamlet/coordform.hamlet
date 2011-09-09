@@ -1,0 +1,15 @@
+<div #coord-base-form>
+  <p>
+    $if isNew
+      Create New Coordination
+    $else
+      Modify Base Info
+  <form method="post" enctype=multipart/form-data>
+    <table>
+      ^{form}
+      <tr>
+        <td>
+          <input type="file" name="coimg" size="60">
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="Update">
