@@ -37,7 +37,7 @@ getCoordinationR cid = do
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   mf <- getFileData "coimg"
   ((res, form), enc) <- runFormPost $ coordForm uid mf mc
-  ((_, itemForm), _) <- runFormPost $ itemForm cid Nothing
+  ((_, itemForm), _) <- runFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
     FormSuccess c -> do
@@ -49,6 +49,7 @@ getCoordinationR cid = do
     addScriptEither $ urlJqueryJs y
     addScript $ StaticR js_jquery_simplemodal_js
     let isNew = False
+    let mcid = Just cid
     let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
@@ -60,14 +61,13 @@ getFileData s = do
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
 
-coordInput :: HtmlUrl FashionAdRoute
-coordInput = undefined
-
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
   mf <- getFileData "coimg"
+  y <- getYesod
   ((res,form),enc) <- runFormPost $ coordForm uid mf Nothing
+  ((_, itemForm), _) <- runFormPost $ itemForm Nothing Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
@@ -75,8 +75,14 @@ getAddCoordinationR = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   defaultLayout $ do
+    addScriptEither $ urlJqueryJs y
+    addScript $ StaticR js_jquery_simplemodal_js
     let isNew = True
-    addWidget $(widgetFile "coordform")
+    let items = []
+    let mc = Nothing
+    let mcid = Nothing
+    let coordform = $(widgetFile "coordform")
+    addWidget $(widgetFile "coordination")
 
 postAddCoordinationR :: Handler RepHtml
 postAddCoordinationR = getAddCoordinationR

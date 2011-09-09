@@ -2,25 +2,34 @@ $maybe c <- mc
   <h2>#{coordinationTitle c} 
     <a href="#" #mod-coord-base>
       modify base info
+$maybe cid <- mcid
   <div #coord-main>
     <div #coord-image>
       <img .resize src=@{CoordinationImgR cid}>  
-    <table #item-list>
-      $forall i <- items
-        <tr>
-          <td>#{itemName $snd i}
-          <td>#{show $ itemKind $ snd i}
-          <td>
-            $maybe ip <- itemPrice $ snd i
-              #{show ip}
+  <table #item-list>
+    $forall i <- items
+      <tr>
+        <td>#{itemName $snd i}
+        <td>#{show $ itemKind $ snd i}
+        <td>
+          $maybe ip <- itemPrice $ snd i
+            #{show ip}
   <div #add-item>
     <h2>Add Item
-    <form method="post" action=@{AddItemR cid}>
-      <table>
-        ^{itemForm}
-        <tr>
-          <td colspan="2">
-            <input type="submit" value="Update">
-  ^{coordform}
+      <form method="post" action=@{AddItemR cid}>
+        <table>
+          ^{itemForm}
+          <tr>
+            <td colspan="2">
+              <input type="submit" value="Update">
 $nothing
-  <h2> no title
+^{coordform}
+
+$if isNew
+  <script>
+    $('#coord-base-form').modal({
+        onClose: function(dialog) {
+            window.location.replace("@{CoordinationsR}");
+        }
+    });
+
