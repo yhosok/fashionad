@@ -6,14 +6,17 @@ import Data.Text (Text, pack)
 
 import Foundation
 
-itemForm :: CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
-itemForm cid mi = renderTable $ Item
-    <$> areq textField "name" (fmap itemName mi)
-    <*> pure cid
-    <*> areq (selectField kinds) "kind" (fmap itemKind mi)
-    <*> aopt textField "link" (fmap itemLink mi)
-    <*> aopt intField "price" (fmap itemPrice mi)
-                    
+itemForm :: Maybe CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
+itemForm mcid mi = \html -> do
+  (rname, vname) <- mreq textField "name" (fmap itemName mi)
+  rcid <- return $ maybe FormMissing pure mcid
+  (rkind, vkind) <- mreq (selectField kinds) "kind" (fmap itemKind mi)
+  (rlink, vlink) <- mopt textField "link" (fmap itemLink mi)
+  (rprice, vprice) <- mopt intField "price" (fmap itemPrice mi)
+  let vs = [vname,vkind,vlink,vprice]
+  return (Item <$> rname <*> rcid <*> rkind <*> rlink <*> rprice,
+          $(widgetFile "itemform"))
+
 kinds :: [(Text, Kind)]
 kinds = map (\x -> (pack $ show x, x)) [minBound..maxBound]
 
@@ -24,7 +27,7 @@ getItemR :: CoordinationId -> ItemId -> Handler ()
 getItemR cid iid = do
   (uid,u) <- requireAuth
   mi <- runDB $ get iid
-  ((res, form), enc) <- runFormPostNoNonce $ itemForm cid mi
+  ((res, form), enc) <- runFormPostNoNonce $ itemForm (Just cid) mi
   case res of
     FormSuccess i -> do
       runDB $ replace iid i
@@ -38,7 +41,7 @@ postItemR = getItemR
 getAddItemR ::CoordinationId -> Handler ()
 getAddItemR cid = do
   (uid, u) <- requireAuth
-  ((res,form),enc) <- runFormPost $ itemForm cid Nothing
+  ((res,form),enc) <- runFormPost $ itemForm (Just cid) Nothing
   case res of
     FormSuccess i -> do
       iid <- runDB $ insert i

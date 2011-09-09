@@ -1,8 +1,6 @@
 $maybe c <- mc
   <h2>#{coordinationTitle c} 
     <a href="#" #mod-coord-base>
-$nothing
-  <h2>no title
       modify base info
 $maybe cid <- mcid
   <div #coord-main>
@@ -24,5 +22,14 @@ $maybe cid <- mcid
           <tr>
             <td colspan="2">
               <input type="submit" value="Update">
+$nothing
 ^{coordform}
+
+$if isNew
+  <script>
+    $('#coord-base-form').modal({
+        onClose: function(dialog) {
+            window.location.replace("@{CoordinationsR}");
+        }
+    });
 

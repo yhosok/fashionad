@@ -37,7 +37,7 @@ getCoordinationR cid = do
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   mf <- getFileData "coimg"
   ((res, form), enc) <- runFormPost $ coordForm uid mf mc
-  ((_, itemForm), _) <- runFormPost $ itemForm cid Nothing
+  ((_, itemForm), _) <- runFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
     FormSuccess c -> do
@@ -65,7 +65,9 @@ getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
   mf <- getFileData "coimg"
+  y <- getYesod
   ((res,form),enc) <- runFormPost $ coordForm uid mf Nothing
+  ((_, itemForm), _) <- runFormPost $ itemForm Nothing Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
@@ -73,6 +75,8 @@ getAddCoordinationR = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   defaultLayout $ do
+    addScriptEither $ urlJqueryJs y
+    addScript $ StaticR js_jquery_simplemodal_js
     let isNew = True
     let items = []
     let mc = Nothing
