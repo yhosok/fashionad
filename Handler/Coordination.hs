@@ -49,6 +49,7 @@ getCoordinationR cid = do
     addScriptEither $ urlJqueryJs y
     addScript $ StaticR js_jquery_simplemodal_js
     let isNew = False
+    let mcid = Just cid
     let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
@@ -59,9 +60,6 @@ getFileData s = do
 
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
-
-coordInput :: HtmlUrl FashionAdRoute
-coordInput = undefined
 
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
@@ -76,7 +74,11 @@ getAddCoordinationR = do
     _ -> return ()
   defaultLayout $ do
     let isNew = True
-    addWidget $(widgetFile "coordform")
+    let items = []
+    let mc = Nothing
+    let mcid = Nothing
+    let coordform = $(widgetFile "coordform")
+    addWidget $(widgetFile "coordination")
 
 postAddCoordinationR :: Handler RepHtml
 postAddCoordinationR = getAddCoordinationR
