@@ -9,7 +9,7 @@ import Data.Text (Text)
 import Yesod.Form.Jquery
 import Foundation
 import Handler.Item
-import Settings.StaticFiles (js_jquery_resize_js)
+import Settings.StaticFiles (js_jquery_simplemodal_js)
 
 coordForm :: UserId -> 
              Maybe B.ByteString -> 
@@ -43,11 +43,13 @@ getCoordinationR cid = do
     FormSuccess c -> do
       runDB $ replace cid c
       setMessage "Updated Coordination"
-      redirect RedirectTemporary CoordinationsR
+      redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   defaultLayout $ do
     addScriptEither $ urlJqueryJs y
-    addScript $ StaticR js_jquery_resize_js
+    addScript $ StaticR js_jquery_simplemodal_js
+    let isNew = False
+    let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
 getFileData :: Text -> Handler (Maybe B.ByteString)
@@ -58,20 +60,23 @@ getFileData s = do
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
 
+coordInput :: HtmlUrl FashionAdRoute
+coordInput = undefined
+
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
-  let items = []
   mf <- getFileData "coimg"
   ((res,form),enc) <- runFormPost $ coordForm uid mf Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
       setMessage "Added new Coordination"
-      redirect RedirectTemporary CoordinationsR
+      redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   defaultLayout $ do
-    addWidget $(widgetFile "item")
+    let isNew = True
+    addWidget $(widgetFile "coordform")
 
 postAddCoordinationR :: Handler RepHtml
 postAddCoordinationR = getAddCoordinationR
@@ -87,4 +92,3 @@ getCoordinationImgR cid = do
     Just c -> do
       img <- return $ maybe B.empty id (coordinationImage c)
       return (typeJpeg, toContent img)
-

@@ -1,33 +1,26 @@
-<script>
-   var max_size = 120;
-   $('.resize').resize(max_size);
-</script>
-<h2>Coordination
-<form method="post" enctype=multipart/form-data>
-    <table>
+$maybe c <- mc
+  <h2>#{coordinationTitle c} 
+    <a href="#" #mod-coord-base>
+      modify base info
+  <div #coord-main>
+    <div #coord-image>
+      <img .resize src=@{CoordinationImgR cid}>  
+    <table #item-list>
+      $forall i <- items
         <tr>
-            <td>
-                <img .resize src=@{CoordinationImgR cid}>
-        ^{form}
-        <tr>
-            <td>
-                <input type="file" name="coimg" size="60">
-        <tr>
-            <td colspan="2">
-                <input type="submit" value="Update">
-<h2>Items
-<table>
-    $forall i <- items
-      <tr>
-        <td>#{itemName $snd i}
-        <td>#{show $ itemKind $ snd i}
-        <td>
-          $maybe ip <- itemPrice $ snd i
-            #{show ip}
-<h2>Add Items
-<form method="post" action=@{AddItemR cid}>
-    <table>
+          <td>#{itemName $snd i}
+          <td>#{show $ itemKind $ snd i}
+          <td>
+            $maybe ip <- itemPrice $ snd i
+              #{show ip}
+  <div #add-item>
+    <h2>Add Item
+    <form method="post" action=@{AddItemR cid}>
+      <table>
         ^{itemForm}
         <tr>
-            <td colspan="2">
-                <input type="submit" value="Update">
+          <td colspan="2">
+            <input type="submit" value="Update">
+  ^{coordform}
+$nothing
+  <h2> no title
