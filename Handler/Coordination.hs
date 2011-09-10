@@ -37,7 +37,7 @@ getCoordinationR cid = do
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   mf <- getFileData "coimg"
   ((res, form), enc) <- runFormPost $ coordForm uid mf mc
-  ((_, itemForm), _) <- runFormPost $ itemForm (Just cid) Nothing
+  ((_, itemForm), _) <- generateFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
     FormSuccess c -> do
