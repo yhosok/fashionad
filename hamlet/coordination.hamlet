@@ -16,12 +16,12 @@ $maybe cid <- mcid
             #{show ip}
   <div #add-item>
     <h2>Add Item
-      <form method="post" action=@{AddItemR cid}>
-        <table>
-          ^{itemForm}
-          <tr>
-            <td colspan="2">
-              <input type="submit" value="Update">
+    <form method="post" action=@{AddItemR cid}>
+      <table>
+        ^{itemForm}
+        <tr>
+          <td colspan="2">
+            <input type="submit" value="Update">
 $nothing
 ^{coordform}
 
