@@ -13,15 +13,22 @@ import Handler.Item
 import Settings.StaticFiles (js_jquery_simplemodal_js)
 
 coordForm :: UserId -> 
-             Maybe B.ByteString -> 
              Maybe Coordination -> 
              Html -> 
              Form FashionAd FashionAd (FormResult Coordination, Widget)
-coordForm uid mf mc = renderTable $ Coordination
-    <$> pure uid
-    <*> areq textField "title" (fmap coordinationTitle mc)
-    <*> aopt textField "description" (fmap coordinationDesc mc)
-    <*> pure (maybe B.empty id mf)
+coordForm uid mc = \html -> do
+    ruid <- pure uid
+    (rtitle, vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
+    (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
+    mfe <- askFiles
+    rcoimg <- return $ chkFile (fmap (M.lookup "coimg") mfe)
+    return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
+            $(widgetFile "coodForm"))
+  where isExist = (> 0) . L.length . fileContent
+        content = B.pack . L.unpack . fileContent
+        chkFile (Just fi) | isExist fi = pure (content fi)
+                          | otherwise = FormFailure ["missing file"]
+        chkFile Nothing = FormMissing
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
@@ -36,8 +43,8 @@ getCoordinationR cid = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  mfr <- getFileData "coimg"
-  ((res, form), enc) <- runFormPost $ coordForm uid (fst <$> mfr) mc
+--  mfr <- getFileData "coimg"
+  ((res, form), enc) <- runFormPost $ coordForm uid mc
   ((_, itemForm), _) <- generateFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
@@ -54,14 +61,14 @@ getCoordinationR cid = do
     let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
-getFileData :: Text -> Handler (Maybe (B.ByteString, String))
-getFileData s = do
-  mfi <- lookupFile s
-  return $ fmap (\fi -> (content fi, msg fi))  mfi
-  where isExist = (> 0) . L.length . fileContent
-        content = B.pack . L.unpack . fileContent
-        msg f | not $ isExist f = "nothing image file"
-        msg _  = ""
+-- getFileData :: Text -> Handler (Maybe (B.ByteString, String))
+-- getFileData s = do
+--   mfi <- lookupFile s
+--   return $ fmap (\fi -> (content fi, msg fi))  mfi
+--   where isExist = (> 0) . L.length . fileContent
+--         content = B.pack . L.unpack . fileContent
+--         msg f | not $ isExist f = "nothing image file"
+--         msg _  = ""
 
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
@@ -69,9 +76,9 @@ postCoordinationR = getCoordinationR
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
-  mfr <- getFileData "coimg"
+--  mfr <- getFileData "coimg"
   y <- getYesod
-  ((res,form),enc) <- runFormPost $ coordForm uid (fst <$> mfr) Nothing
+  ((res,form),enc) <- runFormPost $ coordForm uid Nothing
   ((_, itemForm), _) <- runFormPost $ itemForm Nothing Nothing
   case res of
     FormSuccess c -> do
