@@ -5,6 +5,7 @@ import Control.Applicative
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
+import Control.Monad (guard)
 
 import Yesod.Form.Jquery
 import Foundation
@@ -20,7 +21,7 @@ coordForm uid mf mc = renderTable $ Coordination
     <$> pure uid
     <*> areq textField "title" (fmap coordinationTitle mc)
     <*> aopt textField "description" (fmap coordinationDesc mc)
-    <*> pure mf
+    <*> pure (maybe B.empty id mf)
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
@@ -35,8 +36,8 @@ getCoordinationR cid = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  mf <- getFileData "coimg"
-  ((res, form), enc) <- runFormPost $ coordForm uid mf mc
+  mfr <- getFileData "coimg"
+  ((res, form), enc) <- runFormPost $ coordForm uid (fst <$> mfr) mc
   ((_, itemForm), _) <- generateFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
@@ -53,10 +54,14 @@ getCoordinationR cid = do
     let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
-getFileData :: Text -> Handler (Maybe B.ByteString)
+getFileData :: Text -> Handler (Maybe (B.ByteString, String))
 getFileData s = do
   mfi <- lookupFile s
-  return $ fmap (B.pack . L.unpack . fileContent) mfi 
+  return $ fmap (\fi -> (content fi, msg fi))  mfi
+  where isExist = (> 0) . L.length . fileContent
+        content = B.pack . L.unpack . fileContent
+        msg f | not $ isExist f = "nothing image file"
+        msg _  = ""
 
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
@@ -64,9 +69,9 @@ postCoordinationR = getCoordinationR
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
-  mf <- getFileData "coimg"
+  mfr <- getFileData "coimg"
   y <- getYesod
-  ((res,form),enc) <- runFormPost $ coordForm uid mf Nothing
+  ((res,form),enc) <- runFormPost $ coordForm uid (fst <$> mfr) Nothing
   ((_, itemForm), _) <- runFormPost $ itemForm Nothing Nothing
   case res of
     FormSuccess c -> do
@@ -96,5 +101,5 @@ getCoordinationImgR cid = do
   mc <- runDB $ get cid
   case mc of
     Just c -> do
-      img <- return $ maybe B.empty id (coordinationImage c)
+      img <- return $ coordinationImage c
       return (typeJpeg, toContent img)
