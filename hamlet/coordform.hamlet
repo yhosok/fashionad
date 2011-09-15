@@ -6,10 +6,20 @@
       Modify Base Info
   <form method="post" enctype=multipart/form-data>
     <table>
-      ^{form}
-      <tr>
-        <td>
-          <input type="file" name="coimg" size="60">
-      <tr>
-        <td colspan="2">
-          <input type="submit" value="Update">
+      <tbody>
+        $forall v <- vs
+          <tr :fvRequired v:.required :not $ fvRequired v:.optiona>
+            <td>
+              <label for=#{fvId v}>#{fvLabel v}
+              $maybe tt <- fvTooltip v
+                <div .tooltip>#{tt}
+            <td>
+              ^{fvInput v}
+              $maybe err <- fvErrors v
+                <div .error>#{err}
+        <tr>
+          <td>
+            <input type="file" name="coimg" size="60">
+        <tr>
+          <td colspan="2">
+            <input type="submit" value="Update">
