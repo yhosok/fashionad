@@ -18,12 +18,19 @@ $maybe cid <- mcid
     <h2>Add Item
     <form method="post" action=@{AddItemR cid}>
       <table>
-        ^{itemForm}
+        ^{itemform}
         <tr>
           <td colspan="2">
             <input type="submit" value="Update">
 $nothing
-^{coordform}
+<div #coord-base-form>
+  <p>
+    $if isNew
+      Create New Coordination
+    $else
+      Modify Base Info
+  <form method="post" enctype=multipart/form-data>
+    ^{coordform}
 
 $if isNew
   <script>

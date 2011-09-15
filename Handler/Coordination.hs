@@ -6,6 +6,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
 import Control.Monad (guard)
+import qualified Data.Map as M
 
 import Yesod.Form.Jquery
 import Foundation
@@ -17,13 +18,14 @@ coordForm :: UserId ->
              Html -> 
              Form FashionAd FashionAd (FormResult Coordination, Widget)
 coordForm uid mc = \html -> do
-    ruid <- pure uid
-    (rtitle, vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
+    ruid <- return $ pure uid
+    (rtitle,vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
     (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
     mfe <- askFiles
-    rcoimg <- return $ chkFile (fmap (M.lookup "coimg") mfe)
+    rcoimg <- return $ chkFile (maybe Nothing (M.lookup "coimg") mfe)
+    let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
-            $(widgetFile "coodForm"))
+            $(widgetFile "coordform"))
   where isExist = (> 0) . L.length . fileContent
         content = B.pack . L.unpack . fileContent
         chkFile (Just fi) | isExist fi = pure (content fi)
@@ -44,8 +46,9 @@ getCoordinationR cid = do
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
 --  mfr <- getFileData "coimg"
-  ((res, form), enc) <- runFormPost $ coordForm uid mc
-  ((_, itemForm), _) <- generateFormPost $ itemForm (Just cid) Nothing
+  ((res, coordform), enc) <- runFormPost $ coordForm uid mc
+  liftIO $ print res
+  ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
     FormSuccess c -> do
@@ -58,7 +61,7 @@ getCoordinationR cid = do
     addScript $ StaticR js_jquery_simplemodal_js
     let isNew = False
     let mcid = Just cid
-    let coordform = $(widgetFile "coordform")
+--    let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
 -- getFileData :: Text -> Handler (Maybe (B.ByteString, String))
@@ -76,10 +79,9 @@ postCoordinationR = getCoordinationR
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
---  mfr <- getFileData "coimg"
   y <- getYesod
-  ((res,form),enc) <- runFormPost $ coordForm uid Nothing
-  ((_, itemForm), _) <- runFormPost $ itemForm Nothing Nothing
+  ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
+  ((_, itemform), _) <- runFormPost $ itemForm Nothing Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
@@ -93,7 +95,6 @@ getAddCoordinationR = do
     let items = []
     let mc = Nothing
     let mcid = Nothing
-    let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
 postAddCoordinationR :: Handler RepHtml
