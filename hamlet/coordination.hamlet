@@ -9,7 +9,10 @@ $maybe cid <- mcid
   <table #item-list>
     $forall i <- items
       <tr>
-        <td>#{itemName $snd i}
+        <td>
+          $maybe il <- itemLink $snd i
+            <a href=#{il}>
+          #{itemName $snd i}
         <td>#{show $ itemKind $ snd i}
         <td>
           $maybe ip <- itemPrice $ snd i

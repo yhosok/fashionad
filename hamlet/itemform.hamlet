@@ -1,10 +1,10 @@
 #{html}
 <div>
 $forall v <- vs
-  <div>
-    <div .label>#{fvLabel v}
-      $maybe tt <- fvTooltip v
-        <div .tooltip>#{tt}
-      <div .input>^{fvInput v}
-      $maybe err <- fvErrors v
-        <div .error>#{err}
+  <div :fvRequired v:.required :not $ fvRequired v:.optional>
+    <label for=#{fvId v}>#{fvLabel v}
+    $maybe tt <- fvTooltip v
+      <div .tooltip>#{tt}
+    ^{fvInput v}
+    $maybe err <- fvErrors v
+      <div .error>#{err}

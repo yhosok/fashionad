@@ -27,9 +27,9 @@ coordForm uid mc = \html -> do
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
             $(widgetFile "coordform"))
-  where isExist = (> 0) . L.length . fileContent
+  where notEmpty = not . L.null . fileContent
         content = B.pack . L.unpack . fileContent
-        chkFile (Just fi) | isExist fi = pure (content fi)
+        chkFile (Just fi) | notEmpty fi = pure (content fi)
                           | otherwise = FormFailure ["missing file"]
         chkFile Nothing = FormMissing
         filemsg (FormFailure [a]) = a
@@ -48,7 +48,6 @@ getCoordinationR cid = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
---  mfr <- getFileData "coimg"
   ((res, coordform), enc) <- runFormPost $ coordForm uid mc
   liftIO $ print res
   ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
@@ -64,17 +63,7 @@ getCoordinationR cid = do
     addScript $ StaticR js_jquery_simplemodal_js
     let isNew = False
     let mcid = Just cid
---    let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
-
--- getFileData :: Text -> Handler (Maybe (B.ByteString, String))
--- getFileData s = do
---   mfi <- lookupFile s
---   return $ fmap (\fi -> (content fi, msg fi))  mfi
---   where isExist = (> 0) . L.length . fileContent
---         content = B.pack . L.unpack . fileContent
---         msg f | not $ isExist f = "nothing image file"
---         msg _  = ""
 
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR

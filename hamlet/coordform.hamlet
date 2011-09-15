@@ -2,7 +2,7 @@
 <table>
   <tbody>
   $forall v <- vs
-    <tr :fvRequired v:.required :not $ fvRequired v:.optiona>
+    <tr :fvRequired v:.required :not $ fvRequired v:.optional>
       <td>
         <label for=#{fvId v}>#{fvLabel v}
         $maybe tt <- fvTooltip v
