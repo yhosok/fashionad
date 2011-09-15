@@ -11,7 +11,7 @@ Coordination
     user UserId
     title Text
     desc Text Maybe
-    image ByteString Maybe
+    image ByteString
 Item
     name Text
     coordination CoordinationId

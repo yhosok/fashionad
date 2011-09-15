@@ -5,6 +5,8 @@ import Control.Applicative
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
+import Control.Monad (guard)
+import qualified Data.Map as M
 
 import Yesod.Form.Jquery
 import Foundation
@@ -12,15 +14,26 @@ import Handler.Item
 import Settings.StaticFiles (js_jquery_simplemodal_js)
 
 coordForm :: UserId -> 
-             Maybe B.ByteString -> 
              Maybe Coordination -> 
              Html -> 
              Form FashionAd FashionAd (FormResult Coordination, Widget)
-coordForm uid mf mc = renderTable $ Coordination
-    <$> pure uid
-    <*> areq textField "title" (fmap coordinationTitle mc)
-    <*> aopt textField "description" (fmap coordinationDesc mc)
-    <*> pure mf
+coordForm uid mc = \html -> do
+    ruid <- return $ pure uid
+    (rtitle,vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
+    (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
+    mfe <- askFiles
+    rcoimg <- return $ chkFile (maybe Nothing (M.lookup "coimg") mfe)
+    fmsg <- return $ filemsg rcoimg
+    let vs = [vtitle, vdesc]
+    return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
+            $(widgetFile "coordform"))
+  where isExist = (> 0) . L.length . fileContent
+        content = B.pack . L.unpack . fileContent
+        chkFile (Just fi) | isExist fi = pure (content fi)
+                          | otherwise = FormFailure ["missing file"]
+        chkFile Nothing = FormMissing
+        filemsg (FormFailure [a]) = a
+        filemsg _ = ""
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
@@ -35,9 +48,10 @@ getCoordinationR cid = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  mf <- getFileData "coimg"
-  ((res, form), enc) <- runFormPost $ coordForm uid mf mc
-  ((_, itemForm), _) <- generateFormPost $ itemForm (Just cid) Nothing
+--  mfr <- getFileData "coimg"
+  ((res, coordform), enc) <- runFormPost $ coordForm uid mc
+  liftIO $ print res
+  ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
   y <- getYesod
   case res of
     FormSuccess c -> do
@@ -50,13 +64,17 @@ getCoordinationR cid = do
     addScript $ StaticR js_jquery_simplemodal_js
     let isNew = False
     let mcid = Just cid
-    let coordform = $(widgetFile "coordform")
+--    let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
-getFileData :: Text -> Handler (Maybe B.ByteString)
-getFileData s = do
-  mfi <- lookupFile s
-  return $ fmap (B.pack . L.unpack . fileContent) mfi 
+-- getFileData :: Text -> Handler (Maybe (B.ByteString, String))
+-- getFileData s = do
+--   mfi <- lookupFile s
+--   return $ fmap (\fi -> (content fi, msg fi))  mfi
+--   where isExist = (> 0) . L.length . fileContent
+--         content = B.pack . L.unpack . fileContent
+--         msg f | not $ isExist f = "nothing image file"
+--         msg _  = ""
 
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
@@ -64,10 +82,9 @@ postCoordinationR = getCoordinationR
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
-  mf <- getFileData "coimg"
   y <- getYesod
-  ((res,form),enc) <- runFormPost $ coordForm uid mf Nothing
-  ((_, itemForm), _) <- runFormPost $ itemForm Nothing Nothing
+  ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
+  ((_, itemform), _) <- runFormPost $ itemForm Nothing Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
@@ -81,7 +98,6 @@ getAddCoordinationR = do
     let items = []
     let mc = Nothing
     let mcid = Nothing
-    let coordform = $(widgetFile "coordform")
     addWidget $(widgetFile "coordination")
 
 postAddCoordinationR :: Handler RepHtml
@@ -96,5 +112,5 @@ getCoordinationImgR cid = do
   mc <- runDB $ get cid
   case mc of
     Just c -> do
-      img <- return $ maybe B.empty id (coordinationImage c)
+      img <- return $ coordinationImage c
       return (typeJpeg, toContent img)
