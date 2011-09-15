@@ -23,6 +23,7 @@ coordForm uid mc = \html -> do
     (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
     mfe <- askFiles
     rcoimg <- return $ chkFile (maybe Nothing (M.lookup "coimg") mfe)
+    fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
             $(widgetFile "coordform"))
@@ -31,6 +32,8 @@ coordForm uid mc = \html -> do
         chkFile (Just fi) | isExist fi = pure (content fi)
                           | otherwise = FormFailure ["missing file"]
         chkFile Nothing = FormMissing
+        filemsg (FormFailure [a]) = a
+        filemsg _ = ""
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
