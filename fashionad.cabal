@@ -38,6 +38,7 @@ library
                      Handler.Root
                      Handler.Coordination
                      Handler.Item
+                     Handler.Rating
 
 executable         fashionad
     if flag(devel)

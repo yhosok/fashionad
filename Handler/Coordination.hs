@@ -11,6 +11,7 @@ import qualified Data.Map as M
 import Yesod.Form.Jquery
 import Foundation
 import Handler.Item
+import Handler.Rating
 import Settings.StaticFiles (js_jquery_simplemodal_js)
 
 coordForm :: UserId -> 
@@ -49,8 +50,9 @@ getCoordinationR cid = do
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   ((res, coordform), enc) <- runFormPost $ coordForm uid mc
-  liftIO $ print res
   ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
+  mr <- getRating uid cid
+  ((_, ratingform), _) <- generateFormPost $ ratingForm uid (Just cid) (snd <$> mr)
   y <- getYesod
   case res of
     FormSuccess c -> do
@@ -74,6 +76,7 @@ getAddCoordinationR = do
   y <- getYesod
   ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
   ((_, itemform), _) <- runFormPost $ itemForm Nothing Nothing
+  ((_, ratingform), _) <- runFormPost $ ratingForm uid Nothing Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c

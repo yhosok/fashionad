@@ -16,3 +16,7 @@
 /item/#CoordinationId/#ItemId ItemR GET POST
 /items/add/#CoordinationId AddItemR GET POST
 /items/del/#CoordinationId/#ItemId DelItemR POST
+
+/ratings/#CoordinationId RatingsR GET
+/rating/#CoordinationId RatingR GET POST
+/ratings/del/#CoordinationId/#RatingId DelRatingR POST

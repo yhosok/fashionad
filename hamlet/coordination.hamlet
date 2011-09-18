@@ -25,6 +25,15 @@ $maybe cid <- mcid
         <tr>
           <td colspan="2">
             <input type="submit" value="Update">
+  <div #rating>
+    <h2>Your Rating
+    <form method="post" action=@{RatingR cid}>
+      <table>
+        ^{ratingform}
+        <tr>
+          <td colspan="2">
+            <input type="submit" value="Update">
+  
 $nothing
 <div #coord-base-form>
   <p>

@@ -18,8 +18,9 @@ Item
     kind Kind
     link Text Maybe
     price Int Maybe
-Marks
+Rating
     user UserId
-    cordination CoordinationId
-    rate Rate
-    comment Text
+    coordination CoordinationId
+    value Rate
+    comment Text Maybe
+    UniqueRating user coordination
