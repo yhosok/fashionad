@@ -21,6 +21,6 @@ Item
 Rating
     user UserId
     coordination CoordinationId
-    value Rate
+    value Int
     comment Text Maybe
     UniqueRating user coordination

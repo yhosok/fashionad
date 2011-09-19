@@ -12,7 +12,9 @@ import Yesod.Form.Jquery
 import Foundation
 import Handler.Item
 import Handler.Rating
-import Settings.StaticFiles (js_jquery_simplemodal_js)
+import Settings.StaticFiles (js_jquery_simplemodal_js,
+                             js_jquery_rating_js,
+                             css_jquery_rating_css)
 
 coordForm :: UserId -> 
              Maybe Coordination -> 
@@ -63,6 +65,8 @@ getCoordinationR cid = do
   defaultLayout $ do
     addScriptEither $ urlJqueryJs y
     addScript $ StaticR js_jquery_simplemodal_js
+    addScript $ StaticR js_jquery_rating_js
+    addStylesheet $ StaticR css_jquery_rating_css
     let isNew = False
     let mcid = Just cid
     addWidget $(widgetFile "coordination")
@@ -86,6 +90,7 @@ getAddCoordinationR = do
   defaultLayout $ do
     addScriptEither $ urlJqueryJs y
     addScript $ StaticR js_jquery_simplemodal_js
+    addScript $ StaticR js_jquery_rating_js
     let isNew = True
     let items = []
     let mc = Nothing
@@ -106,3 +111,54 @@ getCoordinationImgR cid = do
     Just c -> do
       img <- return $ coordinationImage c
       return (typeJpeg, toContent img)
+
+getRatingR :: CoordinationId ->  Handler RepHtml
+getRatingR cid = do
+  (uid,u) <- requireAuth
+  mc <- runDB $ get cid
+  items <- runDB $ selectList [ItemCoordination ==. cid] []
+  ((_, coordform), _) <- generateFormPost $ coordForm uid Nothing
+  ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
+  rs <- runDB $ selectList [RatingUser ==. uid, RatingCoordination ==. cid] [LimitTo 1]
+  ratingform <- case rs of
+    []-> insRating uid cid
+    (r:[]) -> updRating uid cid r
+  y <- getYesod
+  defaultLayout $ do
+    addScriptEither $ urlJqueryJs y
+    addScript $ StaticR js_jquery_simplemodal_js
+    addScript $ StaticR js_jquery_rating_js
+    addStylesheet $ StaticR css_jquery_rating_css
+    let isNew = False
+    let mcid = Just cid
+    addWidget $(widgetFile "coordination")
+
+getRating :: UserId -> CoordinationId -> Handler (Maybe (RatingId, Rating))
+getRating uid cid = do
+  rs <- runDB $ selectList [RatingUser ==. uid, RatingCoordination ==. cid] [LimitTo 1]
+  case rs of
+    []-> return Nothing
+    (r:[]) -> return $ Just r
+
+postRatingR :: CoordinationId -> Handler RepHtml
+postRatingR = getRatingR
+
+insRating :: UserId -> CoordinationId -> Handler Widget
+insRating uid cid = do
+  ((res, form), enc) <- runFormPostNoNonce $ ratingForm uid (Just cid) Nothing
+  case res of
+    FormSuccess r -> do
+      rid <- runDB $ insert  r
+      setMessage "Add Rating"
+      redirect RedirectTemporary $ CoordinationR cid
+    _ -> return form
+
+updRating :: UserId -> CoordinationId -> (RatingId, Rating) -> Handler Widget
+updRating uid cid (rid,r) = do
+  ((res, form), enc) <- runFormPostNoNonce $ ratingForm uid (Just cid) (Just r)
+  case res of
+    FormSuccess r' -> do
+      runDB $ replace rid r'
+      setMessage "Updated Item"
+      redirect RedirectTemporary $ CoordinationR cid
+    _ -> return $ form

@@ -1,5 +1,4 @@
 #{html}
-<div>
 $forall v <- vs
   <div :fvRequired v:.required :not $ fvRequired v:.optional>
     <label for=#{fvId v}>#{fvLabel v}
