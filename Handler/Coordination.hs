@@ -162,3 +162,66 @@ updRating uid cid (rid,r) = do
       setMessage "Updated Item"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return $ form
+
+getItemR :: CoordinationId -> ItemId -> Handler RepHtml
+getItemR cid iid = do
+  (uid,u) <- requireAuth
+  mc <- runDB $ get cid
+  items <- runDB $ selectList [ItemCoordination ==. cid] []
+  ((_, coordform), _) <- generateFormPost $ coordForm uid Nothing
+  ((_, ratingform), _) <- runFormPost $ ratingForm uid Nothing Nothing
+  mi <- runDB $ get iid
+  ((res, itemform), enc) <- runFormPostNoNonce $ itemForm (Just cid) mi
+  case res of
+    FormSuccess i -> do
+      runDB $ replace iid i
+      setMessage "Updated Item"
+      redirect RedirectTemporary $ CoordinationR cid
+    _ -> return ()
+  y <- getYesod
+  defaultLayout $ do
+    addScriptEither $ urlJqueryJs y
+    addScript $ StaticR js_jquery_simplemodal_js
+    addScript $ StaticR js_jquery_rating_js
+    addStylesheet $ StaticR css_jquery_rating_css
+    let isNew = False
+    let mcid = Just cid
+    addWidget $(widgetFile "coordination")
+
+postItemR :: CoordinationId -> ItemId -> Handler RepHtml
+postItemR = getItemR
+
+getAddItemR ::CoordinationId -> Handler RepHtml
+getAddItemR cid = do
+  (uid, u) <- requireAuth
+  mc <- runDB $ get cid
+  items <- runDB $ selectList [ItemCoordination ==. cid] []
+  ((_, coordform), _) <- generateFormPost $ coordForm uid Nothing
+  ((_, ratingform), _) <- runFormPost $ ratingForm uid Nothing Nothing
+  ((res,itemform),enc) <- runFormPost $ itemForm (Just cid) Nothing
+  case res of
+    FormSuccess i -> do
+      iid <- runDB $ insert i
+      setMessage "Added new Coordination"
+      redirect RedirectTemporary $ CoordinationR cid
+    _ -> return ()
+  y <- getYesod
+  defaultLayout $ do
+    addScriptEither $ urlJqueryJs y
+    addScript $ StaticR js_jquery_simplemodal_js
+    addScript $ StaticR js_jquery_rating_js
+    addStylesheet $ StaticR css_jquery_rating_css
+    let isNew = False
+    let mcid = Just cid
+    addWidget $(widgetFile "coordination")
+
+postAddItemR :: CoordinationId -> Handler RepHtml
+postAddItemR = getAddItemR
+
+postDelItemR :: CoordinationId -> ItemId -> Handler RepHtml
+postDelItemR cid iid = do
+  (uid, u) <- requireAuth
+  --i <- runDB $ get iid
+  --((_,form),_) <- runFormPost $ itemForm (itemCoordination i) i
+  runDB $ deleteWhere [ItemId ==. iid]
+  redirect RedirectTemporary $ CoordinationR cid
