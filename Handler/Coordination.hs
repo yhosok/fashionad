@@ -23,7 +23,6 @@ coordForm uid mc = \html -> do
     (rtitle,vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
     (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
     mfe <- askFiles
-    liftIO $ print $ maybe Nothing (M.lookup "coimg") mfe
     rcoimg <- return $ chkFile (maybe Nothing (M.lookup "coimg") mfe)
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
@@ -33,7 +32,8 @@ coordForm uid mc = \html -> do
   where notEmpty = not . L.null . fileContent
         content = B.pack . L.unpack . fileContent
         chkFile (Just fi) | notEmpty fi = pure (content fi)
-                          | otherwise = FormFailure ["missing file"]
+                          | otherwise = maybe (FormFailure ["missing file"]) 
+                                              (pure . coordinationImage) mc
         chkFile Nothing = FormMissing
         filemsg (FormFailure [a]) = a
         filemsg _ = ""
@@ -54,6 +54,10 @@ dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget ->
 dispCoordination mcf mif mrf cid= do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
+  liftIO $ print (fmap coordinationTitle mc)
+  case mc of
+    Nothing -> redirect RedirectTemporary $ CoordinationsR
+    _ -> return ()
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   coordform <- getCoordForm mcf uid mc
   coordbase <- return $ coordBaseWidget False coordform
@@ -75,7 +79,11 @@ dispCoordination mcf mif mrf cid= do
 getCoordinationR :: CoordinationId -> Handler RepHtml
 getCoordinationR cid = do
   (uid,u) <- requireAuth
-  ((res, coordform), enc) <- runFormPostNoNonce $ coordForm uid Nothing
+  mc <- runDB $ get cid
+  case mc of
+    Nothing -> redirect RedirectTemporary $ CoordinationsR
+    _ -> return ()
+  ((res, coordform), enc) <- runFormPostNoNonce $ coordForm uid mc
   case res of
     FormSuccess c -> do
       runDB $ replace cid c
