@@ -2,7 +2,6 @@ $maybe c <- mc
   <h2>#{coordinationTitle c} 
     <a href="#" #mod-coord-base>
       modify base info
-$maybe cid <- mcid
   <div #coord-main>
     <div #coord-image>
       <img .resize src=@{CoordinationImgR cid}>  
@@ -33,22 +32,4 @@ $maybe cid <- mcid
         <tr>
           <td colspan="2">
             <input type="submit" value="Update">
-  
-$nothing
-<div #coord-base-form>
-  <p>
-    $if isNew
-      Create New Coordination
-    $else
-      Modify Base Info
-  <form method="post" enctype=multipart/form-data>
-    ^{coordform}
-
-$if isNew
-  <script>
-    $('#coord-base-form').modal({
-        onClose: function(dialog) {
-            window.location.replace("@{CoordinationsR}");
-        }
-    });
-
+^{coordbase}

@@ -1,0 +1,20 @@
+<div #coord-base-form>
+  <p>
+    $if isNew
+      Create New Coordination
+    $else
+      Modify Base Info
+  <form method="post" enctype=multipart/form-data>
+    <table>
+      <tbody>
+        ^{coordform}
+        <tr>
+          <td colspan="2">
+            <input type="submit" value="Update">
+$if isNew
+  <script>
+    $('#coord-base-form').modal({
+        onClose: function(dialog) {
+            window.location.replace("@{CoordinationsR}");
+        }
+    });

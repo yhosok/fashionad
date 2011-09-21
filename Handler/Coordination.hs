@@ -12,9 +12,7 @@ import Yesod.Form.Jquery
 import Foundation
 import Handler.Item
 import Handler.Rating
-import Settings.StaticFiles (js_jquery_simplemodal_js,
-                             js_jquery_rating_js,
-                             css_jquery_rating_css)
+import Settings.StaticFiles (js_jquery_simplemodal_js)
 
 coordForm :: UserId -> 
              Maybe Coordination -> 
@@ -30,7 +28,8 @@ coordForm uid mc = \html -> do
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
-            $(widgetFile "coordform"))
+            do addScript $ StaticR js_jquery_simplemodal_js
+               $(widgetFile "coordform"))
   where notEmpty = not . L.null . fileContent
         content = B.pack . L.unpack . fileContent
         chkFile (Just fi) | notEmpty fi = pure (content fi)
@@ -38,6 +37,9 @@ coordForm uid mc = \html -> do
         chkFile Nothing = FormMissing
         filemsg (FormFailure [a]) = a
         filemsg _ = ""
+
+coordBaseWidget :: Bool -> Widget -> Widget
+coordBaseWidget isNew coordform= $(widgetFile "coordbase")
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
@@ -47,30 +49,40 @@ getCoordinationsR = do
     setTitle "fashionad homepage"
     addWidget $(widgetFile "coordinations")
 
-getCoordinationR :: CoordinationId -> Handler RepHtml
-getCoordinationR cid = do
+dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget -> 
+                    CoordinationId -> Handler RepHtml
+dispCoordination mcf mif mrf cid= do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  ((res, coordform), enc) <- runFormPostNoNonce $ coordForm uid mc
-  ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
+  coordform <- getCoordForm mcf uid mc
+  coordbase <- return $ coordBaseWidget False coordform
+  itemform <- getItemForm mif cid  
   mr <- getRating uid cid
-  ((_, ratingform), _) <- generateFormPost $ ratingForm uid (Just cid) (snd <$> mr)
+  ratingform <- getRatingForm mrf uid cid mr
   y <- getYesod
+  defaultLayout $ do
+    addScriptEither $ urlJqueryJs y
+    addWidget $(widgetFile "coordination")
+  where getCoordForm (Just cform) _ _ = return cform
+        getCoordForm _ uid mc = genForm (coordForm uid mc)
+        getItemForm (Just iform) _ = return iform
+        getItemForm _ cid = genForm (itemForm cid Nothing)
+        getRatingForm (Just rform) _ _ _ = return rform
+        getRatingForm _ uid cid mr = genForm (ratingForm uid cid (snd <$> mr))
+        genForm form = snd . fst <$> (generateFormPost $ form)
+
+getCoordinationR :: CoordinationId -> Handler RepHtml
+getCoordinationR cid = do
+  (uid,u) <- requireAuth
+  ((res, coordform), enc) <- runFormPostNoNonce $ coordForm uid Nothing
   case res of
     FormSuccess c -> do
       runDB $ replace cid c
       setMessage "Updated Coordination"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
-  defaultLayout $ do
-    addScriptEither $ urlJqueryJs y
-    addScript $ StaticR js_jquery_simplemodal_js
-    addScript $ StaticR js_jquery_rating_js
-    addStylesheet $ StaticR css_jquery_rating_css
-    let isNew = False
-    let mcid = Just cid
-    addWidget $(widgetFile "coordination")
+  dispCoordination (Just coordform) Nothing Nothing cid
 
 postCoordinationR :: CoordinationId -> Handler RepHtml
 postCoordinationR = getCoordinationR
@@ -80,8 +92,7 @@ getAddCoordinationR = do
   (uid, u) <- requireAuth
   y <- getYesod
   ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
-  ((_, itemform), _) <- runFormPost $ itemForm Nothing Nothing
-  ((_, ratingform), _) <- runFormPost $ ratingForm uid Nothing Nothing
+  coordbase <- return $ coordBaseWidget True coordform
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
@@ -90,13 +101,7 @@ getAddCoordinationR = do
     _ -> return ()
   defaultLayout $ do
     addScriptEither $ urlJqueryJs y
-    addScript $ StaticR js_jquery_simplemodal_js
-    addScript $ StaticR js_jquery_rating_js
-    let isNew = True
-    let items = []
-    let mc = Nothing
-    let mcid = Nothing
-    addWidget $(widgetFile "coordination")
+    addWidget coordbase
 
 postAddCoordinationR :: Handler RepHtml
 postAddCoordinationR = getAddCoordinationR
@@ -116,78 +121,27 @@ getCoordinationImgR cid = do
 getRatingR :: CoordinationId ->  Handler RepHtml
 getRatingR cid = do
   (uid,u) <- requireAuth
-  mc <- runDB $ get cid
-  items <- runDB $ selectList [ItemCoordination ==. cid] []
-  ((_, coordform), _) <- generateFormPost $ coordForm uid Nothing
-  ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
   rs <- runDB $ selectList [RatingUser ==. uid, RatingCoordination ==. cid] [LimitTo 1]
   ratingform <- case rs of
     []-> insRating uid cid
     (r:[]) -> updRating uid cid r
-  y <- getYesod
-  defaultLayout $ do
-    addScriptEither $ urlJqueryJs y
-    addScript $ StaticR js_jquery_simplemodal_js
-    addScript $ StaticR js_jquery_rating_js
-    addStylesheet $ StaticR css_jquery_rating_css
-    let isNew = False
-    let mcid = Just cid
-    addWidget $(widgetFile "coordination")
-
-getRating :: UserId -> CoordinationId -> Handler (Maybe (RatingId, Rating))
-getRating uid cid = do
-  rs <- runDB $ selectList [RatingUser ==. uid, RatingCoordination ==. cid] [LimitTo 1]
-  case rs of
-    []-> return Nothing
-    (r:[]) -> return $ Just r
+  dispCoordination Nothing Nothing (Just ratingform) cid
 
 postRatingR :: CoordinationId -> Handler RepHtml
 postRatingR = getRatingR
 
-insRating :: UserId -> CoordinationId -> Handler Widget
-insRating uid cid = do
-  ((res, form), enc) <- runFormPostNoNonce $ ratingForm uid (Just cid) Nothing
-  case res of
-    FormSuccess r -> do
-      rid <- runDB $ insert  r
-      setMessage "Add Rating"
-      redirect RedirectTemporary $ CoordinationR cid
-    _ -> return form
-
-updRating :: UserId -> CoordinationId -> (RatingId, Rating) -> Handler Widget
-updRating uid cid (rid,r) = do
-  ((res, form), enc) <- runFormPostNoNonce $ ratingForm uid (Just cid) (Just r)
-  case res of
-    FormSuccess r' -> do
-      runDB $ replace rid r'
-      setMessage "Updated Item"
-      redirect RedirectTemporary $ CoordinationR cid
-    _ -> return $ form
-
 getItemR :: CoordinationId -> ItemId -> Handler RepHtml
 getItemR cid iid = do
   (uid,u) <- requireAuth
-  mc <- runDB $ get cid
-  items <- runDB $ selectList [ItemCoordination ==. cid] []
-  ((_, coordform), _) <- generateFormPost $ coordForm uid Nothing
-  ((_, ratingform), _) <- runFormPost $ ratingForm uid Nothing Nothing
   mi <- runDB $ get iid
-  ((res, itemform), enc) <- runFormPostNoNonce $ itemForm (Just cid) mi
+  ((res, itemform), enc) <- runFormPostNoNonce $ itemForm cid mi
   case res of
     FormSuccess i -> do
       runDB $ replace iid i
       setMessage "Updated Item"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
-  y <- getYesod
-  defaultLayout $ do
-    addScriptEither $ urlJqueryJs y
-    addScript $ StaticR js_jquery_simplemodal_js
-    addScript $ StaticR js_jquery_rating_js
-    addStylesheet $ StaticR css_jquery_rating_css
-    let isNew = False
-    let mcid = Just cid
-    addWidget $(widgetFile "coordination")
+  dispCoordination Nothing (Just itemform) Nothing cid
 
 postItemR :: CoordinationId -> ItemId -> Handler RepHtml
 postItemR = getItemR
@@ -195,26 +149,14 @@ postItemR = getItemR
 getAddItemR ::CoordinationId -> Handler RepHtml
 getAddItemR cid = do
   (uid, u) <- requireAuth
-  mc <- runDB $ get cid
-  items <- runDB $ selectList [ItemCoordination ==. cid] []
-  ((_, coordform), _) <- generateFormPost $ coordForm uid Nothing
-  ((_, ratingform), _) <- runFormPost $ ratingForm uid Nothing Nothing
-  ((res,itemform),enc) <- runFormPost $ itemForm (Just cid) Nothing
+  ((res,itemform),enc) <- runFormPost $ itemForm cid Nothing
   case res of
     FormSuccess i -> do
       iid <- runDB $ insert i
       setMessage "Added new Coordination"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
-  y <- getYesod
-  defaultLayout $ do
-    addScriptEither $ urlJqueryJs y
-    addScript $ StaticR js_jquery_simplemodal_js
-    addScript $ StaticR js_jquery_rating_js
-    addStylesheet $ StaticR css_jquery_rating_css
-    let isNew = False
-    let mcid = Just cid
-    addWidget $(widgetFile "coordination")
+  dispCoordination Nothing (Just itemform) Nothing cid
 
 postAddItemR :: CoordinationId -> Handler RepHtml
 postAddItemR = getAddItemR

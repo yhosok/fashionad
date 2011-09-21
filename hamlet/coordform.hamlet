@@ -1,20 +1,15 @@
 #{html}
-<table>
-  <tbody>
-  $forall v <- vs
-    <tr :fvRequired v:.required :not $ fvRequired v:.optional>
-      <td>
-        <label for=#{fvId v}>#{fvLabel v}
-        $maybe tt <- fvTooltip v
-          <div .tooltip>#{tt}
-      <td>
-        ^{fvInput v}
-        $maybe err <- fvErrors v
-          <div .error>#{err}
-  <tr>
+$forall v <- vs
+  <tr :fvRequired v:.required :not $ fvRequired v:.optional>
     <td>
-      <input type="file" name="coimg" size="60">
-        #{fmsg}
-  <tr>
-    <td colspan="2">
-      <input type="submit" value="Update">
+      <label for=#{fvId v}>#{fvLabel v}
+      $maybe tt <- fvTooltip v
+        <div .tooltip>#{tt}
+    <td>
+      ^{fvInput v}
+      $maybe err <- fvErrors v
+        <div .error>#{err}
+<tr>
+  <td>
+    <input type="file" name="coimg" size="60">
+      #{fmsg}

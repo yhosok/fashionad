@@ -6,10 +6,10 @@ import Data.Text (Text, pack)
 
 import Foundation
 
-itemForm :: Maybe CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
-itemForm mcid mi = \html -> do
+itemForm :: CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
+itemForm cid mi = \html -> do
   (rname, vname) <- mreq textField "name" (fmap itemName mi)
-  rcid <- return $ maybe FormMissing pure mcid
+  rcid <- return $ pure cid
   (rkind, vkind) <- mreq (selectField kinds) "kind" (fmap itemKind mi)
   (rlink, vlink) <- mopt urlField "link" (fmap itemLink mi)
   (rprice, vprice) <- mopt priceField "price" (fmap itemPrice mi)
