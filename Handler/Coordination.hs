@@ -25,6 +25,7 @@ coordForm uid mc = \html -> do
     (rtitle,vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
     (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
     mfe <- askFiles
+    liftIO $ print $ maybe Nothing (M.lookup "coimg") mfe
     rcoimg <- return $ chkFile (maybe Nothing (M.lookup "coimg") mfe)
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
@@ -51,7 +52,7 @@ getCoordinationR cid = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  ((res, coordform), enc) <- runFormPost $ coordForm uid mc
+  ((res, coordform), enc) <- runFormPostNoNonce $ coordForm uid mc
   ((_, itemform), _) <- generateFormPost $ itemForm (Just cid) Nothing
   mr <- getRating uid cid
   ((_, ratingform), _) <- generateFormPost $ ratingForm uid (Just cid) (snd <$> mr)
