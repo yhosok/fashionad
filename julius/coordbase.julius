@@ -1,0 +1,8 @@
+$(function()
+  {
+      // Load dialog on click
+      $('#mod-coord-base').click(function (e) {
+                                     $('#coord-base-form').modal();
+                                     return false;
+                                 });
+  });
