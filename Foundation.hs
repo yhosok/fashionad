@@ -42,6 +42,7 @@ import Text.Shakespeare.Text (stext)
 
 import Yesod.Form.Jquery
 
+import I18n.Japanese
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -227,5 +228,8 @@ Thank you
 
 instance RenderMessage FashionAd FormMessage where
     renderMessage _ _ = defaultFormMessage
+
+instance RenderMessage FashionAd FashionAdMessage where
+    renderMessage _ _ = englishMessage
     
 instance YesodJquery FashionAd

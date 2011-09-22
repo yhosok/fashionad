@@ -1,7 +1,7 @@
 $if null cos
     <p>There are no coordinations listings.
 $else
-    <p>coordinations list.
+    <p>_{CoordinationList}
     <table>
       $forall c <- cos
         <tr>

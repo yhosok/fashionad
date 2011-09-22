@@ -39,6 +39,7 @@ library
                      Handler.Coordination
                      Handler.Item
                      Handler.Rating
+                     I18n.Japanese
 
 executable         fashionad
     if flag(devel)
