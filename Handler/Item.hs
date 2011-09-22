@@ -27,5 +27,3 @@ kinds = map (\x -> (pack $ show x, x)) [minBound..maxBound]
 
 getItemsR :: CoordinationId -> Handler RepHtml
 getItemsR = undefined
-
-  

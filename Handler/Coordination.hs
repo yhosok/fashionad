@@ -59,21 +59,16 @@ dispCoordination mcf mif mrf cid= do
     Nothing -> redirect RedirectTemporary $ CoordinationsR
     _ -> return ()
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  coordform <- getCoordForm mcf uid mc
-  coordbase <- return $ coordBaseWidget False coordform
-  itemform <- getItemForm mif cid  
+  coordform <- getForm (coordForm uid mc) mcf
+  let coordbase = coordBaseWidget False coordform
+  itemform <-  getForm (itemForm cid Nothing) mif
   mr <- getRating uid cid
-  ratingform <- getRatingForm mrf uid cid mr
+  ratingform <- getForm (ratingForm uid cid (snd <$> mr)) mrf
   y <- getYesod
   defaultLayout $ do
     addScriptEither $ urlJqueryJs y
     addWidget $(widgetFile "coordination")
-  where getCoordForm (Just cform) _ _ = return cform
-        getCoordForm _ uid mc = genForm (coordForm uid mc)
-        getItemForm (Just iform) _ = return iform
-        getItemForm _ cid = genForm (itemForm cid Nothing)
-        getRatingForm (Just rform) _ _ _ = return rform
-        getRatingForm _ uid cid mr = genForm (ratingForm uid cid (snd <$> mr))
+  where getForm alt = maybe (genForm alt) return
         genForm form = snd . fst <$> (generateFormPost $ form)
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
@@ -83,7 +78,7 @@ getCoordinationR cid = do
   case mc of
     Nothing -> redirect RedirectTemporary $ CoordinationsR
     _ -> return ()
-  ((res, coordform), enc) <- runFormPostNoNonce $ coordForm uid mc
+  ((res, coordform), enc) <- runFormPost $ coordForm uid mc
   case res of
     FormSuccess c -> do
       runDB $ replace cid c
@@ -129,10 +124,10 @@ getCoordinationImgR cid = do
 getRatingR :: CoordinationId ->  Handler RepHtml
 getRatingR cid = do
   (uid,u) <- requireAuth
-  rs <- runDB $ selectList [RatingUser ==. uid, RatingCoordination ==. cid] [LimitTo 1]
-  ratingform <- case rs of
-    []-> insRating uid cid
-    (r:[]) -> updRating uid cid r
+  mr <- getRating uid cid
+  ratingform <- case mr of
+    Nothing -> insRating uid cid
+    Just r  -> updRating uid cid r
   dispCoordination Nothing Nothing (Just ratingform) cid
 
 postRatingR :: CoordinationId -> Handler RepHtml
@@ -142,7 +137,7 @@ getItemR :: CoordinationId -> ItemId -> Handler RepHtml
 getItemR cid iid = do
   (uid,u) <- requireAuth
   mi <- runDB $ get iid
-  ((res, itemform), enc) <- runFormPostNoNonce $ itemForm cid mi
+  ((res, itemform), enc) <- runFormPost $ itemForm cid mi
   case res of
     FormSuccess i -> do
       runDB $ replace iid i
@@ -172,7 +167,5 @@ postAddItemR = getAddItemR
 postDelItemR :: CoordinationId -> ItemId -> Handler RepHtml
 postDelItemR cid iid = do
   (uid, u) <- requireAuth
-  --i <- runDB $ get iid
-  --((_,form),_) <- runFormPost $ itemForm (itemCoordination i) i
   runDB $ deleteWhere [ItemId ==. iid]
   redirect RedirectTemporary $ CoordinationR cid
