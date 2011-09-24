@@ -1,7 +1,7 @@
 $maybe c <- mc
   <h2>#{coordinationTitle c} 
     <a href="#" #mod-coord-base>
-      modify base info
+      _{MsgModifyBaseInfo}
   <div #coord-main>
     <div #coord-image>
       <img .resize src=@{CoordinationImgR cid}>  
@@ -17,7 +17,7 @@ $maybe c <- mc
           $maybe ip <- itemPrice $ snd i
             #{show ip}
   <div #add-item>
-    <h2>Add Item
+    <h2>_{MsgAddItem}
     <form method="post" action=@{AddItemR cid}>
       <table>
         ^{itemform}
@@ -25,7 +25,7 @@ $maybe c <- mc
           <td colspan="2">
             <input type="submit" value="Update">
   <div #rating>
-    <h2>Your Rating
+    <h2>_{MsgYourRating}
     <form method="post" action=@{RatingR cid}>
       <table>
         ^{ratingform}

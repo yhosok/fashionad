@@ -13,7 +13,6 @@ import Foundation
 import Handler.Item
 import Handler.Rating
 import Settings.StaticFiles (js_jquery_simplemodal_js)
-
 import Types
 
 coordForm :: UserId -> 
@@ -22,23 +21,28 @@ coordForm :: UserId ->
              Form FashionAd FashionAd (FormResult Coordination, Widget)
 coordForm uid mc = \html -> do
     ruid <- return $ pure uid
-    (rtitle,vtitle) <- mreq textField "title" (fmap coordinationTitle mc)
-    (rdesc,vdesc) <- mopt textField "description" (fmap coordinationDesc mc)
+    (rtitle,vtitle) <- mreq textField 
+                       (FieldSettings MsgCoordinationTitle Nothing Nothing Nothing) 
+                       (fmap coordinationTitle mc)
+    (rdesc,vdesc) <- mopt textField "Description" (fmap coordinationDesc mc)
     mfe <- askFiles
-    rcoimg <- return $ chkFile (maybe Nothing (M.lookup "coimg") mfe)
+    liftIO $ print mfe
+    rcoimg <- return $ chkFile mfe
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
             do addScript $ StaticR js_jquery_simplemodal_js
                $(widgetFile "coordform"))
-  where notEmpty = not . L.null . fileContent
-        content = B.pack . L.unpack . fileContent
-        chkFile (Just fi) | notEmpty fi = pure (content fi)
-                          | otherwise = maybe (FormFailure ["missing file"]) 
-                                              (pure . coordinationImage) mc
-        chkFile Nothing = FormMissing
-        filemsg (FormFailure [a]) = a
-        filemsg _ = ""
+  where 
+    notEmpty = maybe False (not . L.null . fileContent)
+    content = maybe B.empty (B.pack . L.unpack . fileContent)
+    mfi = M.lookup "coimg"
+    chkFile (Just fe) | notEmpty $ mfi fe = pure (content $ mfi fe)
+                      | otherwise = maybe (FormFailure ["missing file"]) 
+                                          (pure . coordinationImage) mc
+    chkFile Nothing = FormMissing
+    filemsg (FormFailure [a]) = a
+    filemsg _ = ""
 
 coordBaseWidget :: Bool -> Widget -> Widget
 coordBaseWidget isNew coordform= $(widgetFile "coordbase")
@@ -56,18 +60,17 @@ dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget ->
 dispCoordination mcf mif mrf cid= do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
-  liftIO $ print (fmap coordinationTitle mc)
   case mc of
     Nothing -> redirect RedirectTemporary $ CoordinationsR
     _ -> return ()
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   coordform <- getForm (coordForm uid mc) mcf
-  let coordbase = coordBaseWidget False coordform
   itemform <-  getForm (itemForm cid Nothing) mif
   mr <- getRating uid cid
   ratingform <- getForm (ratingForm uid cid (snd <$> mr)) mrf
   y <- getYesod
   defaultLayout $ do
+    let coordbase = coordBaseWidget False coordform
     addScriptEither $ urlJqueryJs y
     addWidget $(widgetFile "coordination")
   where getForm alt = maybe (genForm alt) return

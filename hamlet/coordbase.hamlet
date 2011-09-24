@@ -1,9 +1,9 @@
 <div #coord-base-form>
   <p>
     $if isNew
-      Create New Coordination
+      _{MsgAddCoordination}
     $else
-      Modify Base Info
+      _{MsgModifyBaseInfo}
   <form method="post" enctype=multipart/form-data>
     <table>
       <tbody>

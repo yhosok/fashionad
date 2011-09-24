@@ -230,9 +230,9 @@ Thank you
     getEmail = runDB . fmap (fmap emailEmail) . get
 
 instance RenderMessage FashionAd FormMessage where
-    renderMessage _ _ = japaneseFormMessage
+    renderMessage _ _ = defaultFormMessage
 
 instance RenderMessage FashionAd FashionAdMessage where
-    renderMessage _ _ = japaneseMessage
+    renderMessage _ _ = englishMessage
     
 instance YesodJquery FashionAd

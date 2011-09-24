@@ -1,5 +1,5 @@
 $if null cos
-    <p>There are no coordinations listings.
+    <p>_{MsgNoCoordinationList}
 $else
     <p>_{MsgCoordinationList}
     <table>
@@ -9,5 +9,5 @@ $else
             <a href="@{CoordinationR (fst c)}">#{coordinationTitle $ snd c}
 
 <p>
-    <a href="@{AddCoordinationR}">Add New Coordination
+    <a href="@{AddCoordinationR}">_{MsgAddCoordination}
 

@@ -69,7 +69,7 @@ updRating uid cid (rid,r) = do
   case res of
     FormSuccess r' -> do
       runDB $ replace rid r'
-      setMessage "Updated Item"
+      setMessage "Updated Rating"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return $ form
 
