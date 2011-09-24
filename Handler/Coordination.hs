@@ -14,7 +14,7 @@ import Handler.Item
 import Handler.Rating
 import Settings.StaticFiles (js_jquery_simplemodal_js)
 
-import I18n.Japanese
+import Types
 
 coordForm :: UserId -> 
              Maybe Coordination -> 

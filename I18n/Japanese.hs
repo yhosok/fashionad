@@ -7,12 +7,12 @@ import Data.Text (Text)
 import Types (FashionAdMessage (..))
 
 japaneseMessage :: FashionAdMessage -> Text
-japaneseMessage FashionAdTitle = "ファッションコーディネート"
-japaneseMessage CoordinationList = "コーディネート一覧"
-japaneseMessage ItemList = "アイテム一覧"
-japaneseMessage AddItem = "アイテム追加"
-japaneseMessage BaseInfo = "基本情報"
+japaneseMessage MsgFashionAdTitle = "ファッションコーディネート"
+japaneseMessage MsgCoordinationList = "コーディネート一覧"
+japaneseMessage MsgItemList = "アイテム一覧"
+japaneseMessage MsgAddItem = "アイテム追加"
+japaneseMessage MsgBaseInfo = "基本情報"
 
 englishMessage :: FashionAdMessage -> Text
-englishMessage FashionAdTitle = "FashionAd"
-englishMessage CoordinationList = "Coordination List"
+englishMessage MsgFashionAdTitle = "FashionAd"
+englishMessage MsgCoordinationList = "Coordination List"

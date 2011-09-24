@@ -42,6 +42,7 @@ import Text.Shakespeare.Text (stext)
 
 import Yesod.Form.Jquery
 
+import Yesod.Form.I18n.Japanese
 import I18n.Japanese
 import Types
 
@@ -229,9 +230,9 @@ Thank you
     getEmail = runDB . fmap (fmap emailEmail) . get
 
 instance RenderMessage FashionAd FormMessage where
-    renderMessage _ _ = defaultFormMessage
+    renderMessage _ _ = japaneseFormMessage
 
 instance RenderMessage FashionAd FashionAdMessage where
-    renderMessage _ _ = englishMessage
+    renderMessage _ _ = japaneseMessage
     
 instance YesodJquery FashionAd
