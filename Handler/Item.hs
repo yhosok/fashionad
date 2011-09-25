@@ -5,7 +5,6 @@ import Control.Applicative
 import Data.Text (Text, pack)
 
 import Foundation
-import Types
 
 itemForm :: CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
 itemForm cid mi = \html -> do

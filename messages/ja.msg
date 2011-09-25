@@ -1,0 +1,10 @@
+FashionAdTitle: ファッションコーディネート
+CoordinationList: コーディネート一覧
+NoCoordinationList: コーディネートの登録がありません。
+ItemList: アイテム一覧
+AddItem: アイテム追加
+BaseInfo: 基本情報
+AddCoordination: 新規登録
+ModifyBaseInfo: 基本情報編集
+YourRating: あなたの評価
+CoordinationTitle: タイトル

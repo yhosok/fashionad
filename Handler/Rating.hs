@@ -7,7 +7,6 @@ import Data.Text (Text, pack)
 import Foundation
 import Settings.StaticFiles (js_jquery_rating_js,
                              css_jquery_rating_css)
-import Types
 
 ratingForm :: UserId -> CoordinationId -> Maybe Rating -> Html -> Form FashionAd FashionAd (FormResult Rating, Widget)
 ratingForm uid cid mr= \html -> do

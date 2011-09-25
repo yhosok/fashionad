@@ -3,6 +3,7 @@
 {-# LANGUAGE CPP #-}
 module Foundation
     ( FashionAd (..)
+    , FashionAdMessage (..)
     , FashionAdRoute (..)
     , resourcesFashionAd
     , Handler
@@ -43,8 +44,6 @@ import Text.Shakespeare.Text (stext)
 import Yesod.Form.Jquery
 
 import Yesod.Form.I18n.Japanese
-import I18n.Japanese
-import Types
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -56,6 +55,8 @@ data FashionAd = FashionAd
     , getStatic :: Static -- ^ Settings for static file serving.
     , connPool :: Settings.ConnectionPool -- ^ Database connection pool.
     }
+
+mkMessage "FashionAd" "messages" "en"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -232,7 +233,4 @@ Thank you
 instance RenderMessage FashionAd FormMessage where
     renderMessage _ _ = defaultFormMessage
 
-instance RenderMessage FashionAd FashionAdMessage where
-    renderMessage _ _ = englishMessage
-    
 instance YesodJquery FashionAd

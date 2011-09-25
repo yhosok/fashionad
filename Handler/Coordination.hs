@@ -13,7 +13,6 @@ import Foundation
 import Handler.Item
 import Handler.Rating
 import Settings.StaticFiles (js_jquery_simplemodal_js)
-import Types
 
 coordForm :: UserId -> 
              Maybe Coordination -> 
