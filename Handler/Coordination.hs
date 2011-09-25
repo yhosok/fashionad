@@ -52,7 +52,7 @@ getCoordinationsR = do
   mu <- requireAuth
   cos <- runDB $ selectList [] []
   defaultLayout $ do
-    setTitle "fashionad homepage"
+    setTitle "Fashionad Homepage"
     addWidget $(widgetFile "coordinations")
 
 dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget -> 
@@ -77,7 +77,7 @@ dispCoordination mcf mif mrf cid= do
     addWidget rating
     addWidget coordbase
   where
-    widget wf alt mw = wf <$> (maybe (genForm alt) return mw)
+    widget wf alt mf = wf <$> (maybe (genForm alt) return mf)
     genForm form = snd . fst <$> (generateFormPost $ form)
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
@@ -165,7 +165,7 @@ getAddItemR cid = do
   case res of
     FormSuccess i -> do
       iid <- runDB $ insert i
-      setMessage "Added new Coordination"
+      setMessage "Added Item"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   dispCoordination Nothing (Just itemform) Nothing cid
