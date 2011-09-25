@@ -1,35 +1,17 @@
-$maybe c <- mc
-  <h2>#{coordinationTitle c} 
-    <a href="#" #mod-coord-base>
-      _{MsgModifyBaseInfo}
-  <div #coord-main>
-    <div #coord-image>
-      <img .resize src=@{CoordinationImgR cid}>  
-  <table #item-list>
-    $forall i <- items
-      <tr>
-        <td>
-          $maybe il <- itemLink $snd i
-            <a href=#{il}>
-          #{itemName $snd i}
-        <td>#{show $ itemKind $ snd i}
-        <td>
-          $maybe ip <- itemPrice $ snd i
-            #{show ip}
-  <div #add-item>
-    <h2>_{MsgAddItem}
-    <form method="post" action=@{AddItemR cid}>
-      <table>
-        ^{itemform}
-        <tr>
-          <td colspan="2">
-            <input type="submit" value="Update">
-  <div #rating>
-    <h2>_{MsgYourRating}
-    <form method="post" action=@{RatingR cid}>
-      <table>
-        ^{ratingform}
-        <tr>
-          <td colspan="2">
-            <input type="submit" value="Update">
-^{coordbase}
+<h2>#{coordinationTitle c} 
+  <a href="#" #mod-coord-base>
+    _{MsgModifyBaseInfo}
+<div #coord-main>
+  <div #coord-image>
+    <img .resize src=@{CoordinationImgR cid}>  
+<table #item-list>
+  $forall i <- items
+    <tr>
+      <td>
+        $maybe il <- itemLink $snd i
+          <a href=#{il}>
+        #{itemName $snd i}
+      <td>#{show $ itemKind $ snd i}
+      <td>
+        $maybe ip <- itemPrice $ snd i
+          #{show ip}

@@ -1,0 +1,8 @@
+<div #rating>
+  <h2>_{MsgYourRating}
+  <form method="post" action=@{RatingR cid}>
+    <table>
+      ^{ratingform}
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="Update">

@@ -7,8 +7,9 @@ import Data.Text (Text, pack)
 import Foundation
 import Settings.StaticFiles (js_jquery_rating_js,
                              css_jquery_rating_css)
+import Types
 
-ratingForm :: UserId -> CoordinationId ->  Maybe Rating -> Html -> Form FashionAd FashionAd (FormResult Rating, Widget)
+ratingForm :: UserId -> CoordinationId -> Maybe Rating -> Html -> Form FashionAd FashionAd (FormResult Rating, Widget)
 ratingForm uid cid mr= \html -> do
   ruid <- return $ pure uid
   rcid <- return $ pure cid
@@ -41,6 +42,9 @@ starField opts = Field
               Just y -> Right $ Just y
               Nothing -> Left $ SomeMessage $ MsgInvalidEntry x 
     isSel v = either (const False) ((==v) . pack . show)
+
+ratingWidget :: CoordinationId -> Widget -> Widget
+ratingWidget cid ratingform = $(widgetFile "rating")
 
 getRatingsR :: CoordinationId -> Handler RepHtml
 getRatingsR = undefined

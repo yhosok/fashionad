@@ -1,0 +1,8 @@
+<div #add-item>
+  <h2>_{MsgAddItem}
+  <form method="post" action=@{AddItemR cid}>
+    <table>
+      ^{itemform}
+      <tr>
+        <td colspan="2">
+          <input type="submit" value="Update">

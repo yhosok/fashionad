@@ -60,21 +60,25 @@ dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget ->
 dispCoordination mcf mif mrf cid= do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
-  case mc of
+  (Just c) <- case mc of
     Nothing -> redirect RedirectTemporary $ CoordinationsR
-    _ -> return ()
+    _ -> return mc
+  isMine <- return $ (coordinationUser c) == uid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  coordform <- getForm (coordForm uid mc) mcf
-  itemform <-  getForm (itemForm cid Nothing) mif
+  coordbase <- widget (coordBaseWidget False) (coordForm uid mc) mcf
+  item <-  widget (itemWidget cid) (itemForm cid Nothing) mif
   mr <- getRating uid cid
-  ratingform <- getForm (ratingForm uid cid (snd <$> mr)) mrf
+  rating <- widget (ratingWidget cid) (ratingForm uid cid (snd <$> mr)) mrf
   y <- getYesod
   defaultLayout $ do
-    let coordbase = coordBaseWidget False coordform
     addScriptEither $ urlJqueryJs y
     addWidget $(widgetFile "coordination")
-  where getForm alt = maybe (genForm alt) return
-        genForm form = snd . fst <$> (generateFormPost $ form)
+    addWidget item
+    addWidget rating
+    addWidget coordbase
+  where
+    widget wf alt mw = wf <$> (maybe (genForm alt) return mw)
+    genForm form = snd . fst <$> (generateFormPost $ form)
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
 getCoordinationR cid = do

@@ -25,5 +25,9 @@ itemForm cid mi = \html -> do
 kinds :: [(Text, Kind)]
 kinds = map (\x -> (pack $ show x, x)) [minBound..maxBound]
 
+itemWidget :: CoordinationId -> Widget -> Widget
+itemWidget cid itemform = $(widgetFile "item")
+
 getItemsR :: CoordinationId -> Handler RepHtml
 getItemsR = undefined
+
