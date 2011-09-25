@@ -72,8 +72,7 @@ dispCoordination mcf mif mrf cid= do
   defaultLayout $ do
     addScriptEither $ urlJqueryJs y
     addWidget $(widgetFile "coordination")
-    addWidget item
-    addWidget rating
+    if isMine then addWidget item else addWidget rating
     addWidget coordbase
   where
     widget wf alt mf = wf <$> (maybe (genForm alt) return mf)

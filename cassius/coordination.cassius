@@ -17,5 +17,7 @@
     font-size: small
 #coord-base-form
     display:none
+#rating
+    clear:both
 #ratingcomment
     clear:both

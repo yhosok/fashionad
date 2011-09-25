@@ -1,6 +1,7 @@
 <h2>#{coordinationTitle c} 
-  <a href="#" #mod-coord-base>
-    _{MsgModifyBaseInfo}
+  $if isMine
+    <a href="#" #mod-coord-base>
+      _{MsgModifyBaseInfo}
 <div #coord-main>
   <div #coord-image>
     <img .resize src=@{CoordinationImgR cid}>  
