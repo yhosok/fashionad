@@ -12,7 +12,7 @@ import Yesod.Form.Jquery
 import Foundation
 import Handler.Item
 import Handler.Rating
-import Settings.StaticFiles (js_jquery_simplemodal_js)
+import Settings.StaticFiles
 
 coordForm :: UserId -> 
              Maybe Coordination -> 
@@ -25,7 +25,6 @@ coordForm uid mc = \html -> do
                        (fmap coordinationTitle mc)
     (rdesc,vdesc) <- mopt textField "Description" (fmap coordinationDesc mc)
     mfe <- askFiles
-    liftIO $ print mfe
     rcoimg <- return $ chkFile mfe
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]

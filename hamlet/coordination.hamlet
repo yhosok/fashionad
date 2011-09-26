@@ -10,8 +10,9 @@
     <tr>
       <td>
         $maybe il <- itemLink $snd i
-          <a href=#{il}>
-        #{itemName $snd i}
+          <a href=#{il}>#{itemName $snd i}
+        $nothing
+          #{itemName $snd i}       
       <td>#{show $ itemKind $ snd i}
       <td>
         $maybe ip <- itemPrice $ snd i

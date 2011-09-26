@@ -1,8 +1,8 @@
 <div #add-item>
-  <h2>_{MsgAddItem}
   <form method="post" action=@{AddItemR cid}>
-    <table>
+    <fieldset>
+      <legend>
+        _{MsgAddItem}
       ^{itemform}
-      <tr>
-        <td colspan="2">
-          <input type="submit" value="Update">
+    <div .fm-submit>
+      <input type="submit" value="Update">

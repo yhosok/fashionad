@@ -8,6 +8,7 @@
 -- declared in the Foundation.hs file.
 module Settings
     ( hamletFile
+    , ihamletFile
     , cassiusFile
     , juliusFile
     , luciusFile
@@ -168,6 +169,9 @@ globFile kind x = kind ++ "/" ++ x ++ "." ++ kind
 
 hamletFile :: FilePath -> Q Exp
 hamletFile = S.hamletFile . globFile "hamlet"
+
+ihamletFile :: FilePath -> Q Exp
+ihamletFile = S.ihamletFile . globFile "hamlet"
 
 cassiusFile :: FilePath -> Q Exp
 cassiusFile = 

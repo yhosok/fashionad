@@ -1,15 +1,12 @@
 #{html}
 $forall v <- vs
-  <tr :fvRequired v:.required :not $ fvRequired v:.optional>
-    <td>
-      <label for=#{fvId v}>#{fvLabel v}
-      $maybe tt <- fvTooltip v
-        <div .tooltip>#{tt}
-    <td>
-      ^{fvInput v}
-      $maybe err <- fvErrors v
-        <div .error>#{err}
-<tr>
-  <td>
-    <input type="file" name="coimg" size="60">
-      #{fmsg}
+  <div :fvRequired v:.required :not $ fvRequired v:.optional>
+    <label for=#{fvId v}>#{fvLabel v}
+    $maybe tt <- fvTooltip v
+      <div .tooltip>#{tt}
+    ^{fvInput v}
+    $maybe err <- fvErrors v
+      <div .error>#{err}
+<div .required>
+  <input type="file" name="coimg" size="60">
+    #{fmsg}

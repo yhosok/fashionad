@@ -1,16 +1,14 @@
 <div #coord-base-form>
-  <p>
-    $if isNew
-      _{MsgAddCoordination}
-    $else
-      _{MsgModifyBaseInfo}
   <form method="post" enctype=multipart/form-data>
-    <table>
-      <tbody>
-        ^{coordform}
-        <tr>
-          <td colspan="2">
-            <input type="submit" value="Update">
+    <fieldset>
+      <legend>
+        $if isNew
+          _{MsgAddCoordination}
+        $else
+          _{MsgModifyBaseInfo}
+      ^{coordform}
+    <div .fm-submit>
+      <input type="submit" value="Update">
 $if isNew
   <script>
     $('#coord-base-form').modal({

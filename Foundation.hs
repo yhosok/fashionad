@@ -89,11 +89,12 @@ instance Yesod FashionAd where
 
     defaultLayout widget = do
         mmsg <- getMessage
+        ma <- maybeAuth
         pc <- widgetToPageContent $ do
             widget
             addCassius $(Settings.cassiusFile "default-layout")
-        hamletToRepHtml $(Settings.hamletFile "default-layout")
-
+        ihamletToRepHtml $(Settings.ihamletFile "default-layout")
+    
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
     urlRenderOverride y (StaticR s) =

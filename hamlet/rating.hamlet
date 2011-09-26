@@ -1,8 +1,9 @@
 <div #rating>
-  <h2>_{MsgYourRating}
   <form method="post" action=@{RatingR cid}>
-    <table>
+    <fieldset>
+      <legend>
+        _{MsgYourRating}
       ^{ratingform}
-      <tr>
-        <td colspan="2">
-          <input type="submit" value="Update">
+    <div .fm-submit>
+      <input type="submit" value="Update">
+

@@ -5,8 +5,7 @@ import Control.Applicative
 import Data.Text (Text, pack)
 
 import Foundation
-import Settings.StaticFiles (js_jquery_rating_js,
-                             css_jquery_rating_css)
+import Settings.StaticFiles
 
 ratingForm :: UserId -> CoordinationId -> Maybe Rating -> Html -> Form FashionAd FashionAd (FormResult Rating, Widget)
 ratingForm uid cid mr= \html -> do
@@ -14,7 +13,7 @@ ratingForm uid cid mr= \html -> do
   rcid <- return $ pure cid
   (rrating, vrating) <- mreq (starField rateValues) "Rate" (ratingValue <$> mr)
   liftIO $ print rrating
-  (rcomment, vcomment) <- mopt textField "Comment" (ratingComment <$> mr)
+  (rcomment, vcomment) <- mopt textareaField "Comment" (ratingComment <$> mr)
   return (Rating <$> ruid <*> rcid <*> rrating <*> rcomment, 
           do addScript $ StaticR js_jquery_rating_js
              addStylesheet $ StaticR css_jquery_rating_css

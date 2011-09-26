@@ -22,5 +22,5 @@ Rating
     user UserId
     coordination CoordinationId
     value Int
-    comment Text Maybe
+    comment Textarea Maybe
     UniqueRating user coordination

@@ -1,10 +1,10 @@
 #{html}
-<div .required>
+<div .required #rating-stars>
   <!--label for=#{fvId vrating}>#{fvLabel vrating}-->
   ^{fvInput vrating}
   $maybe err <- fvErrors vrating
     <div .error>#{err}
-<div .optional #ratingcomment>
+<div .optional #rating-comment>
   <label for=#{fvId vcomment}>#{fvLabel vcomment}
   $maybe tt <- fvTooltip vcomment
     <div .tooltip>#{tt}
