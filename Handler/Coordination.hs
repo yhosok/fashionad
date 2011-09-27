@@ -23,14 +23,13 @@ coordForm uid mc = \html -> do
     (rtitle,vtitle) <- mreq textField 
                        (FieldSettings MsgCoordinationTitle Nothing Nothing Nothing) 
                        (fmap coordinationTitle mc)
-    (rdesc,vdesc) <- mopt textField "Description" (fmap coordinationDesc mc)
+    (rdesc,vdesc) <- mopt textareaField "Description" (fmap coordinationDesc mc)
     mfe <- askFiles
     rcoimg <- return $ chkFile mfe
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
-            do addScript $ StaticR js_jquery_simplemodal_js
-               $(widgetFile "coordform"))
+            $(widgetFile "coordform"))
   where 
     notEmpty = maybe False (not . L.null . fileContent)
     content = maybe B.empty (B.pack . L.unpack . fileContent)
@@ -67,9 +66,7 @@ dispCoordination mcf mif mrf cid= do
   item <-  widget (itemWidget cid) (itemForm cid Nothing) mif
   mr <- getRating uid cid
   rating <- widget (ratingWidget cid) (ratingForm uid cid (snd <$> mr)) mrf
-  y <- getYesod
   defaultLayout $ do
-    addScriptEither $ urlJqueryJs y
     addWidget $(widgetFile "coordination")
     if isMine then addWidget item else addWidget rating
     addWidget coordbase

@@ -10,7 +10,7 @@ Email
 Coordination
     user UserId
     title Text
-    desc Text Maybe
+    desc Textarea Maybe
     image ByteString
 Item
     name Text

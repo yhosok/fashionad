@@ -104,6 +104,9 @@ fieldset div input,fieldset div textarea
     border-right:1px solid #ccc
     padding:1px
     color:#333
+fieldset div input[type="file"]
+    width:auto
+    border:none
 fieldset div select
     padding:1px
 div.fm-multi div

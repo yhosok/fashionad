@@ -11,8 +11,11 @@
       <input type="submit" value="Update">
 $if isNew
   <script>
-    $('#coord-base-form').modal({
-        onClose: function(dialog) {
-            window.location.replace("@{CoordinationsR}");
-        }
-    });
+      $("#coord-base-form").dialog({
+                                       autoOpen: true,
+                                       width:500,
+                                       modal: true,
+                                       close: function(event, ui) {
+                                           window.location.replace("@{CoordinationsR}");
+                                       }
+                                   });
