@@ -92,11 +92,11 @@ instance Yesod FashionAd where
         ma <- maybeAuth
         y <- getYesod
         pc <- widgetToPageContent $ do
-            widget
             addCassius $(Settings.cassiusFile "default-layout")
             addScriptEither $ urlJqueryJs y
             addScriptEither $ urlJqueryUiJs y
             addStylesheetEither $ urlJqueryUiCss y
+            widget
         ihamletToRepHtml $(Settings.ihamletFile "default-layout")
     
     -- This is done to provide an optimization for serving static files from

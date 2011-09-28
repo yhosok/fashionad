@@ -8,7 +8,6 @@ import Data.Text (Text)
 import Control.Monad (guard)
 import qualified Data.Map as M
 
-import Yesod.Form.Jquery
 import Foundation
 import Handler.Item
 import Handler.Rating
@@ -106,7 +105,6 @@ getAddCoordinationR = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   defaultLayout $ do
-    addScriptEither $ urlJqueryJs y
     addWidget coordbase
 
 postAddCoordinationR :: Handler RepHtml
