@@ -23,6 +23,7 @@ import Settings.StaticFiles
 import Yesod.Auth
 import Yesod.Auth.OpenId
 import Yesod.Auth.Email
+--import Yesod.Auth.Message as Msg
 import Yesod.Logger (Logger, logLazyText)
 import qualified Settings
 import System.Directory
@@ -155,6 +156,8 @@ instance YesodAuth FashionAd where
     authPlugins = [ authOpenId
                   , authEmail
                   ]
+--    loginHandler = defaultLayout $ do  
+--      $(widgetFile "login")
 
 -- Sends off your mail. Requires sendmail in production!
 deliver :: FashionAd -> L.ByteString -> IO ()

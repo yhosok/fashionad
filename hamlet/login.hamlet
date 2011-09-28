@@ -1,0 +1,13 @@
+<div #login-form>
+  <form method="post" action=@{AuthR loginR}>
+    <fieldset>
+      <legend>Login
+      <div .required>
+        <label for="email">email
+        <input type="email" name="email" #email>
+      <div .required>
+        <label for="password">password
+        <input type="password" name="password" #password>
+      <div .fm-submit>
+        <input type="submit" value="login via email">
+        <a href="@{AuthR registerR}">I don't have an account

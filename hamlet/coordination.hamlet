@@ -5,7 +5,7 @@
 <div #coord-main>
   <div #coord-image>
     <img .resize src=@{CoordinationImgR cid}>  
-<table #item-list>
+<table #item-list .list-table>
   $forall i <- items
     <tr>
       <td>
