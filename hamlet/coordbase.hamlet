@@ -13,7 +13,6 @@ $if isNew
   <script>
       $("#coord-base-form").dialog({
                                        autoOpen: true,
-                                       width:500,
                                        modal: true,
                                        close: function(event, ui) {
                                            window.location.replace("@{CoordinationsR}");

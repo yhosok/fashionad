@@ -1,7 +1,7 @@
 html,body
     margin:0;padding:0
-body
-    font: 90% arial,sans-serif
+body, .ui-widget
+    font: 90% arial ,sans-serif
 p
     margin:0 10px 10px
 a

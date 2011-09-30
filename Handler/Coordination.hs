@@ -43,7 +43,9 @@ coordForm uid mc = \html -> do
     filemsg _ = ""
 
 coordBaseWidget :: Bool -> Widget -> Widget
-coordBaseWidget isNew coordform= $(widgetFile "coordbase")
+coordBaseWidget isNew coordform= do
+  addCassius $(cassiusFile "coordination")
+  $(widgetFile "coordbase")
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do

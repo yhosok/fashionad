@@ -7,7 +7,8 @@ $(function()
       //                            });
       $("#coord-base-form").dialog({
                                        autoOpen: false,
-                                       width:450,
+                                       width:400,
+                                       height:250,
                                        modal: true                                                                });
       $('#mod-coord-base').click(function(){
                                      $('#coord-base-form').dialog('open')
