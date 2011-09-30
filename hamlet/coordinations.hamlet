@@ -1,12 +1,14 @@
-$if null cos
+$if null tdata
     <p>_{MsgNoCoordinationList}
 $else
     <p>_{MsgCoordinationList}
     <table #coord-list .list-table>
-      $forall c <- cos
+      $forall d <- tdata
         <tr>
           <td>
-            <a href="@{CoordinationR (fst c)}">#{coordinationTitle $ snd c}
+            <a href="@{CoordinationR (cid d)}">#{ctitle d}
+          <td>
+            ^{rwidget d}
 
 <p #add-coord>
     <a href="@{AddCoordinationR}">_{MsgAddCoordination}

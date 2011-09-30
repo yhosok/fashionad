@@ -7,6 +7,8 @@ import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
 import Control.Monad (guard)
 import qualified Data.Map as M
+import Control.Monad (forM)
+import Data.List (genericLength)
 
 import Foundation
 import Handler.Item
@@ -47,9 +49,15 @@ getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
   mu <- requireAuth
   cos <- runDB $ selectList [] []
+  tdata <- forM cos $ \c -> do
+    w <- averageRatingWidget (fst c)
+    return (c, w)
   defaultLayout $ do
-    setTitle "Fashionad Homepage"
     addWidget $(widgetFile "coordinations")
+  where
+    cid = fst . fst
+    ctitle = coordinationTitle . snd . fst
+    rwidget = snd
 
 dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget -> 
                     CoordinationId -> Handler RepHtml

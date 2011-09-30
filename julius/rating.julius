@@ -1,0 +1,1 @@
+$.fn.rating.options.required = true;
