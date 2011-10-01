@@ -1,7 +1,17 @@
-#coord-list
-    width:400px
-#coord-list td
+.coord-list
 
+div.coord-list ul
+    width: 110px
+    margin-right: 10px
+    float: left
+div.coord-list ul li.image
+    width: 100px
+    height: 155px
+div.coord-list ul li.title
+    font-size: 80%
+    height: 30px
+div.coord-list ul li.rating
+    padding-top: 7px
 #add-coord
     margin-left: 0px
     margin-top: 10px

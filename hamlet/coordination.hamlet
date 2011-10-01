@@ -4,7 +4,7 @@
       _{MsgModifyBaseInfo}
 <div #coord-main>
   <div #coord-image>
-    <img .resize src=@{CoordinationImgR cid}>  
+    <img .resize src=@{CoordinationImgLR cid}>  
 <table #item-list .list-table>
   $forall i <- items
     <tr>

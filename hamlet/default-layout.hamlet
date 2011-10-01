@@ -26,6 +26,8 @@
               _{MsgCoordinationList}
           $maybe u <- ma
             <li>
+              <a href=@{AddCoordinationR}>_{MsgAddCoordination}
+            <li>
               <a href=@{AuthR LogoutR}>Logout
       <div #extra>
       <div #footer>

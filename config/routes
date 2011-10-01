@@ -10,7 +10,8 @@
 /coordination/#CoordinationId CoordinationR GET POST
 /coordinations/add AddCoordinationR GET POST
 /coordinations/del/#CoordinationId DelCoordinationR POST
-/coordinations/img/#CoordinationId CoordinationImgR GET
+/coordinations/img_s/#CoordinationId CoordinationImgSR GET
+/coordinations/img_l/#CoordinationId CoordinationImgLR GET
 
 /items/#CoordinationId ItemsR GET
 /item/#CoordinationId/#ItemId ItemR GET POST

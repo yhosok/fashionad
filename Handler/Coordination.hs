@@ -10,6 +10,8 @@ import qualified Data.Map as M
 import Control.Monad (forM)
 import Data.List (genericLength)
 
+import Graphics.GD
+
 import Foundation
 import Handler.Item
 import Handler.Rating
@@ -54,12 +56,17 @@ getCoordinationsR = do
   tdata <- forM cos $ \c -> do
     w <- averageRatingWidget (fst c)
     return (c, w)
+  rows <- return $ mapM_ (\row -> addWidget $(widgetFile "coordlistrow")) $ toRows tdata
   defaultLayout $ do
     addWidget $(widgetFile "coordinations")
   where
     cid = fst . fst
     ctitle = coordinationTitle . snd . fst
     rwidget = snd
+    colcnt = 4
+    toRows xs = case splitAt colcnt xs of
+      (ys,[]) ->  ys:[]
+      (ys,zs) ->  ys:toRows zs
 
 dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget -> 
                     CoordinationId -> Handler RepHtml
@@ -123,14 +130,28 @@ postAddCoordinationR = getAddCoordinationR
 postDelCoordinationR :: CoordinationId -> Handler RepHtml
 postDelCoordinationR = undefined
 
-getCoordinationImgR :: CoordinationId -> Handler (ContentType, Content)
-getCoordinationImgR cid = do
+
+getCoordinationImgSR, getCoordinationImgLR :: CoordinationId -> Handler (ContentType, Content)
+getCoordinationImgSR cid = coordinationImg cid (100,150)
+getCoordinationImgLR cid = coordinationImg cid (200,300)
+
+coordinationImg :: CoordinationId -> (Float , Float) -> Handler (ContentType, Content)
+coordinationImg cid (mw,mh) = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   case mc of
     Just c -> do
-      img <- return $ coordinationImage c
-      return (typeJpeg, toContent img)
+      cimg <- return $ coordinationImage c
+      resizeImg <- liftIO $ do
+                     img <- loadJpegByteString cimg
+                     (w,h) <- imageSize img
+                     rimg <- uncurry resizeImage (size w h) $ img 
+                     saveJpegByteString (-1) rimg
+      return (typeJpeg, toContent resizeImg)
+  where
+    size w h | realToFrac w > (realToFrac h * mw / mh) = (round mw, calc h w mw)
+             | otherwise = (calc w h mh, round mh)
+    calc x y max = round $ (realToFrac x / realToFrac y) * max
 
 getRatingR :: CoordinationId ->  Handler RepHtml
 getRatingR cid = do

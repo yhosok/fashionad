@@ -1,0 +1,10 @@
+<div .coord-list .clear>
+  $forall d <- row
+    <ul>
+      <li .image>
+        <a href="@{CoordinationR (cid d)}">
+          <img src=@{CoordinationImgSR (cid d)}>
+      <li .title>
+        #{ctitle d}
+      <li .rating>
+        ^{rwidget d}

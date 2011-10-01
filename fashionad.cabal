@@ -87,6 +87,7 @@ executable         fashionad
                  , blaze-builder
                  , cmdargs
                  , containers
+                 , gd
 
     if !os(windows)
          build-depends: unix

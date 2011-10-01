@@ -94,6 +94,7 @@ instance Yesod FashionAd where
         y <- getYesod
         pc <- widgetToPageContent $ do
             addCassius $(Settings.cassiusFile "default-layout")
+            addJulius $(Settings.juliusFile "default-layout")
             addScriptEither $ urlJqueryJs y
             addScriptEither $ urlJqueryUiJs y
             addStylesheetEither $ urlJqueryUiCss y

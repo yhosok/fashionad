@@ -6,6 +6,8 @@ p
     margin:0 10px 10px
 a
     color: #981793
+ol, ul
+    list-style: none
 #header h1
     height:80px;line-height:80px;margin:0;
     padding-left:10px;background: #EEE;color: #79B30B
@@ -63,6 +65,10 @@ a
     display:inline
     padding:0
     color:#C6D5FD
+
+.clear
+    clear:both
+
 
 /* table for list*/
 .list-table
