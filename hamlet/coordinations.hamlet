@@ -1,4 +1,4 @@
-$if null tdata
+$if null cs
     <p>_{MsgNoCoordinationList}
 $else
     <p>_{MsgCoordinationList}

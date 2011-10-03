@@ -1,31 +1,36 @@
 #coord-image
-    float:left
-    width:200px
-#item-list
+    float: left
+    width: 240px
+    margin: 10px
+#item-content
     float:left
     width:400px
+#item-list
+    width:100%
 #item-list td
 #add-item
     clear:both
+    width:100%
     padding-top: 20px
+    margin-bottom: 20px
 #mod-coord-base
     font-size: small
-/*
-#coord-base-form
-    display:none
-*/
 #rating
     clear:both
+    width:700px
+    padding-top: 10px
 #rating-stars
-    padding: 5px 0 30px 50px
-#rating-comment
-    clear:both
+    padding: 5px 0 30px 12px
+#rating-comment label
+    text-align: left
+#rating-comment textarea
+    width: 500px
+    height: 70px
 
 /* for forms */
 form
     margin:0
     padding:0
-    width:350px
 fieldset
     margin:1em 0
     border:none
@@ -35,11 +40,11 @@ legend
     padding:0 .5em
     color:#036
     background:transparent
-    font-size:1.3em
+    font-size:1.0em
     font-weight:bold
 label
     float:left
-    width:100px
+    width:80px
     padding:0 1em
     text-align:right
 fieldset div
@@ -47,7 +52,7 @@ fieldset div
     padding:0
     display:block
 fieldset div input,fieldset div textarea
-    width:150px
+    width:250px
     border-top:1px solid #555
     border-left:1px solid #555
     border-bottom:1px solid #ccc

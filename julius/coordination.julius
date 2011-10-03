@@ -1,7 +1,6 @@
-/*
-$(function()
-  {
-      resize('.list-image',70);
-      resize('img.resize',150);
-  });
-*/
+function deleteItem (url) {
+    $.post(url, function(data){
+               var target = $('#item-'+data);
+               target.remove();
+           });
+}

@@ -52,13 +52,17 @@ coordBaseWidget isNew coordform= do
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
   mu <- requireAuth
-  cos <- runDB $ selectList [] []
-  tdata <- forM cos $ \c -> do
-    w <- averageRatingWidget (fst c)
-    return (c, w)
-  rows <- return $ mapM_ (\row -> addWidget $(widgetFile "coordlistrow")) $ toRows tdata
+  cs <- runDB $ selectList [] []
+  rows <- coordinationList cs
   defaultLayout $ do
     addWidget $(widgetFile "coordinations")
+
+coordinationList :: [(CoordinationId, Coordination)] -> Handler Widget
+coordinationList cs = do
+  tdata <- forM cs $ \c -> do
+    w <- averageRatingWidget (fst c)
+    return (c, w)
+  return $ mapM_ (\row -> addWidget $(widgetFile "coordlistrow")) $ toRows tdata
   where
     cid = fst . fst
     ctitle = coordinationTitle . snd . fst
@@ -84,7 +88,6 @@ dispCoordination mcf mif mrf cid= do
   rating <- widget (ratingWidget cid) (ratingForm uid cid (snd <$> mr)) mrf
   defaultLayout $ do
     addWidget $(widgetFile "coordination")
-    if isMine then addWidget item else addWidget rating
     addWidget coordbase
   where
     widget wf alt mf = wf <$> (maybe (genForm alt) return mf)
@@ -133,21 +136,25 @@ postDelCoordinationR = undefined
 
 getCoordinationImgSR, getCoordinationImgLR :: CoordinationId -> Handler (ContentType, Content)
 getCoordinationImgSR cid = coordinationImg cid (100,150)
-getCoordinationImgLR cid = coordinationImg cid (200,300)
+getCoordinationImgLR cid = coordinationImg cid (240,360)
 
 coordinationImg :: CoordinationId -> (Float , Float) -> Handler (ContentType, Content)
-coordinationImg cid (mw,mh) = do
+coordinationImg cid areaSize = do
   (uid,u) <- requireAuth
   mc <- runDB $ get cid
   case mc of
     Just c -> do
-      cimg <- return $ coordinationImage c
-      resizeImg <- liftIO $ do
-                     img <- loadJpegByteString cimg
-                     (w,h) <- imageSize img
-                     rimg <- uncurry resizeImage (size w h) $ img 
-                     saveJpegByteString (-1) rimg
+      cimg <- return $ coordinationImage c 
+      resizeImg <- liftIO $ resizeBSImage areaSize cimg
       return (typeJpeg, toContent resizeImg)
+    Nothing -> return (typeJpeg, toContent B.empty)
+
+resizeBSImage :: (Float, Float) -> B.ByteString -> IO B.ByteString
+resizeBSImage (mw,mh) bsimg = do
+  img <- loadJpegByteString bsimg
+  (w,h) <- imageSize img
+  rimg <- uncurry resizeImage (size w h) $ img 
+  saveJpegByteString (-1) rimg
   where
     size w h | realToFrac w > (realToFrac h * mw / mh) = (round mw, calc h w mw)
              | otherwise = (calc w h mh, round mh)
@@ -196,8 +203,9 @@ getAddItemR cid = do
 postAddItemR :: CoordinationId -> Handler RepHtml
 postAddItemR = getAddItemR
 
-postDelItemR :: CoordinationId -> ItemId -> Handler RepHtml
+postDelItemR :: CoordinationId -> ItemId -> Handler RepPlain
 postDelItemR cid iid = do
   (uid, u) <- requireAuth
   runDB $ deleteWhere [ItemId ==. iid]
-  redirect RedirectTemporary $ CoordinationR cid
+  return $ RepPlain $ toContent $ toSinglePiece iid
+--  redirect RedirectTemporary $ CoordinationR cid

@@ -5,15 +5,22 @@
 <div #coord-main>
   <div #coord-image>
     <img .resize src=@{CoordinationImgLR cid}>  
-<table #item-list .list-table>
-  $forall i <- items
-    <tr>
-      <td>
-        $maybe il <- itemLink $snd i
-          <a href=#{il}>#{itemName $snd i}
-        $nothing
-          #{itemName $snd i}       
-      <td>#{show $ itemKind $ snd i}
-      <td>
-        $maybe ip <- itemPrice $ snd i
-          #{show ip}
+  <div #item-content>
+    <table #item-list .list-table>
+      $forall i <- items
+        <tr #item-#{toSinglePiece $ fst i}>
+          <td>
+            $maybe il <- itemLink $snd i
+              <a href=#{il}>#{itemName $snd i}
+            $nothing
+              #{itemName $snd i}       
+          <td>#{show $ itemKind $ snd i}
+          <td>
+            $maybe ip <- itemPrice $ snd i
+              #{show ip}
+          <td>
+            <a href="javascript:deleteItem('@{DelItemR cid (fst i)}')">delete
+    $if isMine
+      ^{item}
+$if not isMine
+  ^{rating}
