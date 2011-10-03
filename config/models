@@ -24,3 +24,7 @@ Rating
     value Int
     comment Textarea Maybe
     UniqueRating user coordination
+Follow
+    follower UserId
+    followed UserId
+    UniqueFollow follower followed

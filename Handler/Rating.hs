@@ -8,9 +8,9 @@ import Data.List (genericLength)
 import Foundation
 import Settings.StaticFiles
 
-ratingForm :: UserId -> CoordinationId -> Maybe Rating -> 
+ratingForm :: CoordinationId -> UserId -> Maybe Rating -> 
               Html -> Form FashionAd FashionAd (FormResult Rating, Widget)
-ratingForm uid cid mr= \html -> do
+ratingForm cid uid mr= \html -> do
   ruid <- return $ pure uid
   rcid <- return $ pure cid
   (rrating, vrating) <- mreq (starField rates) "Rate" (ratingValue <$> mr)
@@ -44,8 +44,8 @@ starField opts = Field
     isSel v = either (const False) ((==v) . pack . show)
     op n = StarOp {name = n, isDisabled = False, split = Nothing}
 
-ratingWidget :: CoordinationId -> Widget -> Widget
-ratingWidget cid ratingform = $(widgetFile "rating")
+ratingWidget :: CoordinationId -> UserId -> Widget -> Widget
+ratingWidget cid uid ratingform = $(widgetFile "rating")
 
 averageRatingWidget :: CoordinationId -> Handler Widget
 averageRatingWidget cid = do
@@ -90,9 +90,9 @@ getRating uid cid = do
     []-> return Nothing
     (r:[]) -> return $ Just r
 
-insRating :: UserId -> CoordinationId -> Handler Widget
-insRating uid cid = do
-  ((res, form), enc) <- runFormPost $ ratingForm uid cid Nothing
+insRating :: CoordinationId -> UserId -> Handler Widget
+insRating cid uid = do
+  ((res, form), enc) <- runFormPost $ ratingForm cid uid Nothing
   case res of
     FormSuccess r -> do
       rid <- runDB $ insert  r
@@ -100,9 +100,9 @@ insRating uid cid = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return form
 
-updRating :: UserId -> CoordinationId -> (RatingId, Rating) -> Handler Widget
-updRating uid cid (rid,r) = do
-  ((res, form), enc) <- runFormPost $ ratingForm uid cid (Just r)
+updRating :: CoordinationId -> UserId -> (RatingId, Rating) -> Handler Widget
+updRating cid uid (rid,r) = do
+  ((res, form), enc) <- runFormPost $ ratingForm cid uid (Just r)
   case res of
     FormSuccess r' -> do
       runDB $ replace rid r'

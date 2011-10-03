@@ -7,17 +7,20 @@
 / RootR GET
 
 /coordinations CoordinationsR GET
-/coordination/#CoordinationId CoordinationR GET POST
 /coordinations/add AddCoordinationR GET POST
-/coordinations/del/#CoordinationId DelCoordinationR POST
-/coordinations/img_s/#CoordinationId CoordinationImgSR GET
-/coordinations/img_l/#CoordinationId CoordinationImgLR GET
+/coordinations/#CoordinationId/del DelCoordinationR POST
+/coordinations/#CoordinationId/img_s CoordinationImgSR GET
+/coordinations/#CoordinationId/img_l CoordinationImgLR GET
+/coordination/#CoordinationId CoordinationR GET POST
 
-/items/#CoordinationId ItemsR GET
-/item/#CoordinationId/#ItemId ItemR GET POST
-/items/add/#CoordinationId AddItemR GET POST
-/items/del/#CoordinationId/#ItemId DelItemR POST
+/coordination/#CoordinationId/items ItemsR GET
+/coordination/#CoordinationId/items/add AddItemR GET POST
+/coordination/#CoordinationId/items/#ItemId/del DelItemR POST
+/coordination/#CoordinationId/item/#ItemId ItemR GET POST
 
-/ratings/#CoordinationId RatingsR GET
-/rating/#CoordinationId RatingR GET POST
-/ratings/del/#CoordinationId/#RatingId DelRatingR POST
+/coordination/#CoordinationId/ratings RatingsR GET
+/coordination/#CoordinationId/ratings/#RatingId/del DelRatingR POST
+/coordination/#CoordinationId/user/#UserId/rating RatingR GET POST
+
+/user/#UserId/following FollowingR GET POST
+/user/#UserId/followers FollowersR GET

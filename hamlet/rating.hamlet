@@ -1,5 +1,5 @@
 <div #rating>
-  <form method="post" action=@{RatingR cid}>
+  <form method="post" action=@{RatingR cid uid}>
     <fieldset>
       <legend>
         _{MsgYourRating}

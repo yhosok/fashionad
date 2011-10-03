@@ -85,7 +85,7 @@ dispCoordination mcf mif mrf cid= do
   coordbase <- widget (coordBaseWidget False) (coordForm uid mc) mcf
   item <-  widget (itemWidget cid) (itemForm cid Nothing) mif
   mr <- getRating uid cid
-  rating <- widget (ratingWidget cid) (ratingForm uid cid (snd <$> mr)) mrf
+  rating <- widget (ratingWidget cid uid) (ratingForm cid uid (snd <$> mr)) mrf
   defaultLayout $ do
     addWidget $(widgetFile "coordination")
     addWidget coordbase
@@ -160,16 +160,16 @@ resizeBSImage (mw,mh) bsimg = do
              | otherwise = (calc w h mh, round mh)
     calc x y max = round $ (realToFrac x / realToFrac y) * max
 
-getRatingR :: CoordinationId ->  Handler RepHtml
-getRatingR cid = do
-  (uid,u) <- requireAuth
+getRatingR :: CoordinationId -> UserId -> Handler RepHtml
+getRatingR cid uid = do
+  _ <- requireAuth
   mr <- getRating uid cid
   ratingform <- case mr of
-    Nothing -> insRating uid cid
-    Just r  -> updRating uid cid r
+    Nothing -> insRating cid uid
+    Just r  -> updRating cid uid r
   dispCoordination Nothing Nothing (Just ratingform) cid
 
-postRatingR :: CoordinationId -> Handler RepHtml
+postRatingR :: CoordinationId -> UserId -> Handler RepHtml
 postRatingR = getRatingR
 
 getItemR :: CoordinationId -> ItemId -> Handler RepHtml
