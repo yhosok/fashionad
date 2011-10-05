@@ -1,9 +1,0 @@
-<div #rating>
-  <form method="post" action=@{RatingR cid uid}>
-    <fieldset>
-      <legend>
-        _{MsgYourRating}
-      ^{ratingform}
-    <div .fm-submit>
-      <input type="submit" value="Update">
-

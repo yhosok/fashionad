@@ -37,6 +37,7 @@ import Network.Mail.Mime
 import qualified Data.Text.Lazy.Encoding
 import Text.Jasmine (minifym)
 import qualified Data.Text as T
+import Data.Text (Text)
 import Web.ClientSession (getKey)
 import Text.Blaze.Renderer.Utf8 (renderHtml)
 import Text.Hamlet (shamlet)

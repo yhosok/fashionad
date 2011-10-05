@@ -1,8 +1,0 @@
-<div #add-item>
-  <form method="post" action=@{AddItemR cid}>
-    <fieldset>
-      <legend>
-        _{MsgAddItem}
-      ^{itemform}
-    <div .fm-submit>
-      <input type="submit" value="Update">

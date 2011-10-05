@@ -8,3 +8,5 @@ AddCoordination: Add New Coordination
 ModifyBaseInfo: Modify Base Info
 YourRating: Your Rating
 CoordinationTitle: Title
+MyPage name@Text: #{name}'s MyPage
+UserList: User List

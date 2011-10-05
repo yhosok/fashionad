@@ -22,5 +22,9 @@
 /coordination/#CoordinationId/ratings/#RatingId/del DelRatingR POST
 /coordination/#CoordinationId/user/#UserId/rating RatingR GET POST
 
-/user/#UserId/following FollowingR GET POST
+/users UsersR GET
+/user/follow FollowR POST
+/user/unfollow UnFollowR POST
+/user/#UserId/following FollowingR GET
 /user/#UserId/followers FollowersR GET
+/user/#UserId/mypage MyPageR GET

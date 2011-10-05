@@ -8,3 +8,5 @@ AddCoordination: 新規登録
 ModifyBaseInfo: 基本情報編集
 YourRating: あなたの評価
 CoordinationTitle: タイトル
+MyPage name@Text: #{name} さんのMyPage
+UserList: ユーザ一覧

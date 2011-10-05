@@ -1,0 +1,11 @@
+$(function()
+  {
+      $('.follow').click(function(e){
+                             e.preventDefault();
+                             $.post($(this).attr('href'), 
+                                    { followuid:$(this).attr('fid') },
+                                    function(data){
+                                        $('.follow-id-'+data).toggle();
+                                    });
+                         });
+  });

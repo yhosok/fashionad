@@ -1,0 +1,11 @@
+<div #user-list>
+  <table #users-table .list-table>
+    $forall u <- users
+      <tr>
+        <td>
+          <a href="@{MyPageR (fst $ fst $ u)}">#{ident u}
+        <td>
+            <a .follow .follow-id-#{uidtxt u} fid=#{uidtxt u} href=@{UnFollowR} :not $ isFollow u:style="display: none;">UnFollow
+            <a .follow .follow-id-#{uidtxt u} fid=#{uidtxt u} href=@{FollowR} :isFollow u:style="display: none;">Follow
+
+

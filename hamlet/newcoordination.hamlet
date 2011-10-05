@@ -1,0 +1,8 @@
+<div #coord-base-form>
+  <form method="post" action="@{AddCoordinationR}" enctype=multipart/form-data>
+    <fieldset>
+      <legend>
+        _{MsgAddCoordination}
+      ^{coordform}
+    <div .fm-submit>
+      <input type="submit" value="Regist">

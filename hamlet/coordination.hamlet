@@ -19,8 +19,30 @@
             $maybe ip <- itemPrice $ snd i
               #{show ip}
           <td>
-            <a href="javascript:deleteItem('@{DelItemR cid (fst i)}')">delete
+            <a .del-item href="@{DelItemR cid (fst i)}">delete
     $if isMine
-      ^{item}
+      <div #add-item>
+        <form method="post" action=@{AddItemR cid}>
+          <fieldset>
+            <legend>
+              _{MsgAddItem}
+            ^{itemform}
+          <div .fm-submit>
+            <input type="submit" value="Update">
 $if not isMine
-  ^{rating}
+  <div #rating>
+    <form method="post" action=@{RatingR cid uid}>
+      <fieldset>
+        <legend>
+          _{MsgYourRating}
+        ^{ratingform}
+      <div .fm-submit>
+        <input type="submit" value="Update">
+<div #coord-base-form>
+  <form method="post" action="@{CoordinationR cid}" enctype=multipart/form-data>
+    <fieldset>
+      <legend>
+        _{MsgModifyBaseInfo}
+      ^{coordform}
+    <div .fm-submit>
+      <input type="submit" value="Update">

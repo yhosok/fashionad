@@ -28,6 +28,8 @@
             <li>
               <a href=@{AddCoordinationR}>_{MsgAddCoordination}
             <li>
+              <a href=@{UsersR}>_{MsgUserList}
+            <li>
               <a href=@{AuthR LogoutR}>Logout
       <div #extra>
       <div #footer>

@@ -44,30 +44,35 @@ coordForm uid mc = \html -> do
     filemsg (FormFailure [a]) = a
     filemsg _ = ""
 
-coordBaseWidget :: Bool -> Widget -> Widget
-coordBaseWidget isNew coordform= do
-  addCassius $(cassiusFile "coordination")
-  $(widgetFile "coordbase")
-
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
   mu <- requireAuth
-  cs <- runDB $ selectList [] []
+  coordListPage [] $ MsgCoordinationTitle
+
+getMyPageR :: UserId -> Handler RepHtml
+getMyPageR uid = do
+  requireAuth
+  coordListPage [CoordinationUser ==. uid] $ MsgMyPage (toSinglePiece uid)
+
+coordListPage :: [Filter Coordination] -> FashionAdMessage -> Handler RepHtml
+coordListPage filter msgtitle = do
+  cs <- runDB $ selectList filter []
   rows <- coordinationList cs
   defaultLayout $ do
-    addWidget $(widgetFile "coordinations")
+    addWidget $(widgetFile "coordinations") 
 
 coordinationList :: [(CoordinationId, Coordination)] -> Handler Widget
 coordinationList cs = do
   tdata <- forM cs $ \c -> do
     w <- averageRatingWidget (fst c)
     return (c, w)
-  return $ mapM_ (\row -> addWidget $(widgetFile "coordlistrow")) $ toRows tdata
+  return $ mapM_ widget $ toRows tdata
   where
     cid = fst . fst
     ctitle = coordinationTitle . snd . fst
     rwidget = snd
     colcnt = 4
+    widget row = addWidget $(widgetFile "coordlistrow")
     toRows xs = case splitAt colcnt xs of
       (ys,[]) ->  ys:[]
       (ys,zs) ->  ys:toRows zs
@@ -82,15 +87,15 @@ dispCoordination mcf mif mrf cid= do
     _ -> return mc
   isMine <- return $ (coordinationUser c) == uid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  coordbase <- widget (coordBaseWidget False) (coordForm uid mc) mcf
-  item <-  widget (itemWidget cid) (itemForm cid Nothing) mif
-  mr <- getRating uid cid
-  rating <- widget (ratingWidget cid uid) (ratingForm cid uid (snd <$> mr)) mrf
+  coordform <- widget (coordForm uid mc) mcf
+  itemform <-  widget (itemForm cid Nothing) mif
+  mr <- runDB $ getBy $ UniqueRating uid cid
+  ratingform <- widget (ratingForm cid uid (snd <$> mr)) mrf
   defaultLayout $ do
+    let isNew = False
     addWidget $(widgetFile "coordination")
-    addWidget coordbase
   where
-    widget wf alt mf = wf <$> (maybe (genForm alt) return mf)
+    widget alt mf = maybe (genForm alt) return mf
     genForm form = snd . fst <$> (generateFormPost $ form)
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
@@ -115,9 +120,7 @@ postCoordinationR = getCoordinationR
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
   (uid, u) <- requireAuth
-  y <- getYesod
   ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
-  coordbase <- return $ coordBaseWidget True coordform
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
@@ -125,7 +128,8 @@ getAddCoordinationR = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   defaultLayout $ do
-    addWidget coordbase
+    addCassius $(cassiusFile "coordination")
+    addWidget $(widgetFile "newcoordination")
 
 postAddCoordinationR :: Handler RepHtml
 postAddCoordinationR = getAddCoordinationR
@@ -162,11 +166,8 @@ resizeBSImage (mw,mh) bsimg = do
 
 getRatingR :: CoordinationId -> UserId -> Handler RepHtml
 getRatingR cid uid = do
-  _ <- requireAuth
-  mr <- getRating uid cid
-  ratingform <- case mr of
-    Nothing -> insRating cid uid
-    Just r  -> updRating cid uid r
+  requireAuth
+  ratingform <- updateRating cid uid
   dispCoordination Nothing Nothing (Just ratingform) cid
 
 postRatingR :: CoordinationId -> UserId -> Handler RepHtml

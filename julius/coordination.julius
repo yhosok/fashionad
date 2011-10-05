@@ -1,6 +1,20 @@
-function deleteItem (url) {
-    $.post(url, function(data){
-               var target = $('#item-'+data);
-               target.remove();
-           });
-}
+$(function(){
+      $("#coord-base-form").dialog({
+                                       autoOpen: false,
+                                       width:420,
+                                       height:250,
+                                       modal: true                                                                });
+
+      $('#mod-coord-base').click(function(){
+                                     $('#coord-base-form').dialog('open')
+                                     return false;
+                                 });
+
+      $('.del-item').click(function(e){
+                              e.preventDefault();
+                              $.post($(this).attr('href'),
+                                     function(data){
+                                         $('#item-'+data).slideUp();
+                                     });
+                          });
+  });

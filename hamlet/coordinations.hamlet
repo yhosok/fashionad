@@ -1,7 +1,7 @@
 $if null cs
     <p>_{MsgNoCoordinationList}
 $else
-    <p>_{MsgCoordinationList}
+    <h2>_{msgtitle}
     ^{rows}
 
 
