@@ -1,0 +1,2 @@
+<a .follow .follow-id-#{uidtxt} fid=#{uidtxt} href=@{UnFollowR} :not $ isFollow mf:style="display: none;">UnFollow
+<a .follow .follow-id-#{uidtxt} fid=#{uidtxt} href=@{FollowR} :isFollow mf:style="display: none;">Follow

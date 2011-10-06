@@ -1,0 +1,7 @@
+#user-info .title
+    margin: 10px 0
+    text-align: center
+#user-info ul
+    padding-left:55px
+    list-style:disc
+    

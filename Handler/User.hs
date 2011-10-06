@@ -25,7 +25,6 @@ followHelper :: UserId -> (UserId -> YesodDB FashionAd FashionAd a)
                 -> Handler RepPlain
 followHelper uid dbop = do
   mid <- runInputPost $ fmap fromSinglePiece $ ireq hiddenField "followuid"
-  liftIO $ print mid
   case mid of
     Just fid -> do
       runDB $ dbop fid
@@ -62,5 +61,3 @@ userListPage filter = do
         uidtxt = toSinglePiece . fst . fst
         isFollow = maybe False (const True) . snd
         isSameUser u uid = (fst . fst $ u) == uid
-
-

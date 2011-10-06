@@ -1,6 +1,10 @@
 <div #user-info>
-  <p>User Info
+  <p .title>User Info
   <div #infos>
+    $maybe u <- mu
+      $if not $ isMyInfo u
+        ^{follow}
+    $nothing
     <ul .info-list>
       <li>
         <a href="@{MyPageR uid}">Coordinations (#{coord})

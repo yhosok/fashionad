@@ -5,15 +5,28 @@ import Control.Applicative
 
 import Foundation
 
-userInfoWidget :: UserId -> Widget
+userInfoWidget :: UserId -> Handler Widget
 userInfoWidget uid = do
-  (following,follower,coord) <- lift . runDB $ (,,)
+  mu <- maybeAuth
+  (following,follower,coord) <- runDB $ (,,)
                                 <$> count [FollowFollower ==. uid]
                                 <*> count [FollowFollowed ==. uid]
                                 <*> count [CoordinationUser ==. uid]
-  $(widgetFile "userinfo")
-  
-fashionAdLayout uid main = 
+  follow <- followWidget uid
+  return $(widgetFile "userinfo")
+  where isMyInfo = ((==uid) . fst)
+
+
+fashionAdLayout :: UserId -> Widget -> Handler RepHtml
+fashionAdLayout uid main = do
+  sidebar <- userInfoWidget uid
   defaultLayout $ do
-    let sidebar = userInfoWidget uid
     $(widgetFile "content-layout")
+
+followWidget :: UserId -> Handler Widget
+followWidget uid = do
+  (uid',u') <- requireAuth
+  mf <- runDB $ getBy $ UniqueFollow uid' uid
+  return $(widgetFile "follow")
+  where uidtxt = toSinglePiece uid
+        isFollow = maybe False (const True)
