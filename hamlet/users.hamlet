@@ -5,10 +5,9 @@
         <td>
           <a href="@{MyPageR (fst $ fst $ u)}">#{ident u}
         <td>
-          $if isSameUser u uid
+          $if isMyInfo u
             It is yourself.
           $else
-            <a .follow .follow-id-#{uidtxt u} fid=#{uidtxt u} href=@{UnFollowR} :not $ isFollow u:style="display: none;">UnFollow
-            <a .follow .follow-id-#{uidtxt u} fid=#{uidtxt u} href=@{FollowR} :isFollow u:style="display: none;">Follow
+            ^{snd u}
 
 

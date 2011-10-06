@@ -25,8 +25,8 @@ fashionAdLayout uid main = do
 
 followWidget :: UserId -> Handler Widget
 followWidget uid = do
-  (uid',u') <- requireAuth
-  mf <- runDB $ getBy $ UniqueFollow uid' uid
+  (lid,_) <- requireAuth
+  mf <- runDB $ getBy $ UniqueFollow lid uid
   return $(widgetFile "follow")
   where uidtxt = toSinglePiece uid
         isFollow = maybe False (const True)

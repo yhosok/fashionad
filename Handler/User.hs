@@ -35,29 +35,24 @@ getFollowingR :: UserId -> Handler RepHtml
 getFollowingR uid = do
   requireAuth
   us <- runDB $ selectList [FollowFollower ==. uid] []
-  userListPage [UserId <-. (map (followFollowed . snd) us)]
+  userListPage uid [UserId <-. (map (followFollowed . snd) us)]
 
 getFollowersR :: UserId -> Handler RepHtml
 getFollowersR uid = do
   requireAuth
   us <- runDB $ selectList [FollowFollowed ==. uid] []
-  userListPage [UserId <-. (map (followFollower . snd) us)]
+  userListPage uid [UserId <-. (map (followFollower . snd) us)]
 
 getUsersR :: Handler RepHtml
 getUsersR = do
   (uid,u) <- requireAuth
-  userListPage []
+  userListPage uid []
   
-userListPage :: [Filter User] -> Handler RepHtml
-userListPage filter = do
-  (uid,u) <- requireAuth
-  users <- runDB $ do
-        us <- selectList filter []
-        forM us $ \user@(uid',u') -> do 
-          mf <- getBy $ UniqueFollow uid uid'
-          return (user, mf)
+userListPage :: UserId -> [Filter User] -> Handler RepHtml
+userListPage uid filter = do
+  us <- runDB $ selectList filter []  
+  users <- forM us $ \user@(uid',_) -> 
+    fmap (\fw -> (user,fw)) $ followWidget uid'
   fashionAdLayout uid $(widgetFile "users")
   where ident = userIdent . snd . fst
-        uidtxt = toSinglePiece . fst . fst
-        isFollow = maybe False (const True) . snd
-        isSameUser u uid = (fst . fst $ u) == uid
+        isMyInfo = (==uid) . fst . fst
