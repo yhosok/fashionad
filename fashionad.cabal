@@ -40,6 +40,7 @@ library
                      Handler.Item
                      Handler.Rating
                      Handler.User
+                     Handler.Content
                      Yesod.Form.I18n.Japanese
 
 executable         fashionad

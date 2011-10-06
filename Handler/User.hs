@@ -5,7 +5,11 @@ import Control.Applicative
 import Control.Monad (forM)
 import qualified Data.Text as T (Text, pack, empty)
 
+import Database.Persist.Join (SelectOneMany (..), selectOneMany)
+import Database.Persist.Join.Sql (runJoin)
+
 import Foundation
+import Handler.Content
 
 postFollowR :: Handler RepPlain
 postFollowR = do
@@ -20,7 +24,6 @@ postUnFollowR = do
 followHelper :: UserId -> (UserId -> YesodDB FashionAd FashionAd a) 
                 -> Handler RepPlain
 followHelper uid dbop = do
-  liftIO $ print "!!!!!!!!!!!!!!!!!!!!!!!!!"
   mid <- runInputPost $ fmap fromSinglePiece $ ireq hiddenField "followuid"
   liftIO $ print mid
   case mid of
@@ -49,11 +52,15 @@ getUsersR = do
 userListPage :: [Filter User] -> Handler RepHtml
 userListPage filter = do
   (uid,u) <- requireAuth
-  us <- runDB $ selectList filter []
-  users <- forM us $ \user@(uid',u') -> do 
-    mf <- runDB $ getBy $ UniqueFollow uid uid'
-    return (user, mf)
-  defaultLayout $(widgetFile "users")
+  users <- runDB $ do
+        us <- selectList filter []
+        forM us $ \user@(uid',u') -> do 
+          mf <- getBy $ UniqueFollow uid uid'
+          return (user, mf)
+  fashionAdLayout uid $(widgetFile "users")
   where ident = userIdent . snd . fst
         uidtxt = toSinglePiece . fst . fst
         isFollow = maybe False (const True) . snd
+        isSameUser u uid = (fst . fst $ u) == uid
+
+

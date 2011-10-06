@@ -31,7 +31,7 @@
               <a href=@{UsersR}>_{MsgUserList}
             <li>
               <a href=@{AuthR LogoutR}>Logout
-      <div #extra>
+      <!--div #extra-->
       <div #footer>
         <p>
           powered by the #

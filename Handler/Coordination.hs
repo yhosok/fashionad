@@ -15,6 +15,7 @@ import Graphics.GD
 import Foundation
 import Handler.Item
 import Handler.Rating
+import Handler.Content
 import Settings.StaticFiles
 
 coordForm :: UserId -> 
@@ -46,19 +47,20 @@ coordForm uid mc = \html -> do
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
-  mu <- requireAuth
-  coordListPage [] $ MsgCoordinationTitle
+  (uid, u) <- requireAuth
+  coordListPage uid [] $ MsgCoordinationTitle
 
 getMyPageR :: UserId -> Handler RepHtml
 getMyPageR uid = do
   requireAuth
-  coordListPage [CoordinationUser ==. uid] $ MsgMyPage (toSinglePiece uid)
+  coordListPage uid [CoordinationUser ==. uid] $ MsgMyPage (toSinglePiece uid)
 
-coordListPage :: [Filter Coordination] -> FashionAdMessage -> Handler RepHtml
-coordListPage filter msgtitle = do
+coordListPage :: UserId -> [Filter Coordination] -> 
+                 FashionAdMessage -> Handler RepHtml
+coordListPage uid filter msgtitle = do
   cs <- runDB $ selectList filter []
   rows <- coordinationList cs
-  defaultLayout $ do
+  fashionAdLayout uid $ do
     addWidget $(widgetFile "coordinations") 
 
 coordinationList :: [(CoordinationId, Coordination)] -> Handler Widget
@@ -91,7 +93,7 @@ dispCoordination mcf mif mrf cid= do
   itemform <-  widget (itemForm cid Nothing) mif
   mr <- runDB $ getBy $ UniqueRating uid cid
   ratingform <- widget (ratingForm cid uid (snd <$> mr)) mrf
-  defaultLayout $ do
+  fashionAdLayout (coordinationUser c) $ do
     let isNew = False
     addWidget $(widgetFile "coordination")
   where
@@ -127,7 +129,7 @@ getAddCoordinationR = do
       setMessage "Added new Coordination"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
-  defaultLayout $ do
+  fashionAdLayout uid $ do
     addCassius $(cassiusFile "coordination")
     addWidget $(widgetFile "newcoordination")
 

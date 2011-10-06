@@ -1,0 +1,10 @@
+<div #user-info>
+  <p>User Info
+  <div #infos>
+    <ul .info-list>
+      <li>
+        <a href="@{MyPageR uid}">Coordinations (#{coord})
+      <li>
+        <a href="@{FollowingR uid}">Following (#{following})
+      <li>
+        <a href="@{FollowersR uid}">Followed (#{follower})

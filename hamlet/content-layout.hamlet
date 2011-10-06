@@ -1,0 +1,4 @@
+<div #main>
+  ^{main}
+<div #sidebar>
+  ^{sidebar}

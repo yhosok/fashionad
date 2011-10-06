@@ -1,0 +1,8 @@
+#main
+    float:left;width:100%
+#sidebar
+    background:#eeeeee
+    float:left;width:20%
+    margin-left:-25%
+#sidebar ul
+    list-style:disc
