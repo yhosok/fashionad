@@ -54,8 +54,8 @@ averageRatingWidget cid = do
     split = 4
     values = map (pack . show) [1..(last rateValues * split)]
     roundVal = round . (*) (fromIntegral split) . average . rates
-    isSel v = (==v) . (pack . show)
-    op = StarOp {name = (name cid), isDisabled = True, split = Just split}
+    isSel v = (==v) . pack . show
+    op = StarOp {name = name cid, isDisabled = True, split = Just split}
 
 data StarOptions =  StarOp { name :: Text, 
                              isDisabled :: Bool,

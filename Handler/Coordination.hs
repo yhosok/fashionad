@@ -140,7 +140,7 @@ postDelCoordinationR :: CoordinationId -> Handler RepHtml
 postDelCoordinationR = undefined
 
 
-getCoordinationImgSR, getCoordinationImgLR :: CoordinationId -> Handler (ContentType, Content)
+getCoordinationImgSR,getCoordinationImgLR :: CoordinationId -> Handler (ContentType, Content)
 getCoordinationImgSR cid = coordinationImg cid (100,150)
 getCoordinationImgLR cid = coordinationImg cid (240,360)
 
@@ -211,4 +211,3 @@ postDelItemR cid iid = do
   (uid, u) <- requireAuth
   runDB $ deleteWhere [ItemId ==. iid]
   return $ RepPlain $ toContent $ toSinglePiece iid
---  redirect RedirectTemporary $ CoordinationR cid

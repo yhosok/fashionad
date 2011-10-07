@@ -14,8 +14,7 @@ userInfoWidget uid = do
                                 <*> count [CoordinationUser ==. uid]
   follow <- followWidget uid
   return $(widgetFile "userinfo")
-  where isMyInfo = ((==uid) . fst)
-
+  where isMyInfo = (==uid) . fst
 
 fashionAdLayout :: UserId -> Widget -> Handler RepHtml
 fashionAdLayout uid main = do
