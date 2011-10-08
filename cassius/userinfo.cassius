@@ -1,7 +1,17 @@
+#user-info
+    border: 1px solid #CCC
+#user-info p
+    text-align:center
+    line-height:2
+    margin:0
 #user-info .title
-    margin: 10px 0
-    text-align: center
+    background-color: #CCC
 #user-info ul
     padding-left:55px
     list-style:disc
-    
+#user-info .user-follow
+    background-color:#FFDAB9
+    width: 100%
+    margin:0
+    line-height:2
+

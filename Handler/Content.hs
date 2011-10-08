@@ -8,10 +8,11 @@ import Foundation
 userInfoWidget :: UserId -> Handler Widget
 userInfoWidget uid = do
   mu <- maybeAuth
-  (following,follower,coord) <- runDB $ (,,)
-                                <$> count [FollowFollower ==. uid]
-                                <*> count [FollowFollowed ==. uid]
-                                <*> count [CoordinationUser ==. uid]
+  (muser,following,follower,coord) <- runDB $ (,,,)
+                                      <$> get uid
+                                      <*> count [FollowFollower ==. uid]
+                                      <*> count [FollowFollowed ==. uid]
+                                      <*> count [CoordinationUser ==. uid]
   follow <- followWidget uid
   return $(widgetFile "userinfo")
   where isMyInfo = (==uid) . fst

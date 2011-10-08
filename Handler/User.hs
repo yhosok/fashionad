@@ -20,7 +20,23 @@ postUnFollowR :: Handler RepPlain
 postUnFollowR = do
   (uid,u) <- requireAuth
   followHelper uid $ \fid -> deleteBy $ UniqueFollow uid fid
-
+{--
+postFollow1R :: Handler RepPlain
+postFollow1R = do
+  (uid,u) <- requireAuth
+  mid <- runInputPost $ fmap fromSinglePiece $ ireq hiddenField "followuid"
+  case mid of
+    Just fid -> runDB $ do
+      mf <- getBy $ UniqueFollow uid fid
+      case mf of
+        Just _ -> do
+          deleteBy $ UniqueFollow uid fid
+        Nothing -> do
+          insert $ Follow uid fid
+          return ()
+      return $ RepPlain $ toContent $ toSinglePiece fid
+    Nothing -> return $ RepPlain $ toContent T.empty
+--}
 followHelper :: UserId -> (UserId -> YesodDB FashionAd FashionAd a) 
                 -> Handler RepPlain
 followHelper uid dbop = do

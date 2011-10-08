@@ -18,7 +18,7 @@
 #rating
     clear:both
     width:700px
-    padding-top: 10px
+    padding: 10px 0
 #rating-stars
     padding: 5px 0 30px 12px
 #rating-comment label
@@ -75,7 +75,6 @@ div.fm-multi label
     text-align:left
 .fm-submit
     clear:both
-    padding-top:1em
     text-align:center
 .fm-submit input
     border:1px solid #333

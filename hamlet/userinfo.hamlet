@@ -1,9 +1,13 @@
 <div #user-info>
   <p .title>User Info
   <div #infos>
+    $maybe user <- muser
+      <p .user-name>
+        #{userIdent user}
     $maybe u <- mu
       $if not $ isMyInfo u
-        ^{follow}
+        <p .user-follow>
+          ^{follow}
     $nothing
     <ul .info-list>
       <li>
