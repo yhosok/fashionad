@@ -101,6 +101,8 @@ instance Yesod FashionAd where
             addStylesheetEither $ urlJqueryUiCss y
             widget
         ihamletToRepHtml $(Settings.ihamletFile "default-layout")
+      where showFullName u | T.null (userFullName u) = "<not set yourname>"
+                           | otherwise = userFullName u
     
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
@@ -153,7 +155,7 @@ instance YesodAuth FashionAd where
         case x of
             Just (uid, _) -> return $ Just uid
             Nothing -> do
-                fmap Just $ insert $ User (credsIdent creds) Nothing
+                fmap Just $ insert $ defaultUser (credsIdent creds)
 
     authPlugins = [ authOpenId
                   , authEmail
@@ -223,7 +225,7 @@ Thank you
                 case emailUser e of
                     Just uid -> return $ Just uid
                     Nothing -> do
-                        uid <- insert $ User email Nothing
+                        uid <- insert$ defaultUser email
                         update eid [EmailUser =. Just uid, EmailVerkey =. Nothing]
                         return $ Just uid
     getPassword = runDB . fmap (join . fmap userPassword) . get
@@ -244,3 +246,12 @@ instance RenderMessage FashionAd FormMessage where
     renderMessage _ _ = defaultFormMessage
 
 instance YesodJquery FashionAd
+
+defaultUser :: Text -> User
+defaultUser ident = User 
+                  { userIdent = ident
+                  , userPassword = Nothing
+                  , userFullName = ""
+                  , userIntroduction = Nothing
+                  }
+                            

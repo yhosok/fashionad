@@ -1,0 +1,14 @@
+<div #user-profile>
+  <p>#{userFullName u}'s Profile
+  <table>
+    <tbody>
+      <tr>
+        <th>Full Name
+        <td>#{userFullName u}
+      <tr>
+        <th>Introduction
+        <td>
+          $maybe intro <- userIntroduction u
+            #{intro}
+
+

@@ -1,6 +1,8 @@
 User
     ident Text
     password Text Maybe Update
+    fullName Text
+    introduction Textarea Maybe
     UniqueUser ident
 Email
     email Text

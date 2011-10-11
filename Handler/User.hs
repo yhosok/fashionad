@@ -11,6 +11,37 @@ import Database.Persist.Join.Sql (runJoin)
 import Foundation
 import Handler.Content
 
+userForm :: User -> Html -> Form FashionAd FashionAd (FormResult User, Widget)
+userForm u = renderDivs $ User
+  <$> pure (userIdent u)
+  <*> pure (userPassword u)
+  <*> areq textField "Full name" (Just $ userFullName u)
+  <*> aopt textareaField "Introduction" (Just $ userIntroduction u)
+
+getProfileR :: Handler RepHtml
+getProfileR = do
+  (uid,u) <- requireAuth
+  ((res,userform),enc) <- runFormPost $ userForm u
+  case res of
+    FormSuccess u' -> do
+      runDB $ replace uid u'
+      setMessage "Update Your Profile"
+      redirect RedirectTemporary $ CoordinationsR
+    _ -> return ()
+  fashionAdLayout uid $ do
+    addCassius $(cassiusFile "form")
+    addWidget $(widgetFile "profile")
+
+postProfileR :: Handler RepHtml
+postProfileR = getProfileR
+
+getUserR :: UserId -> Handler RepHtml
+getUserR uid = do
+  requireAuth
+  u <- runDB $ get404 uid
+  fashionAdLayout uid $ do
+    addWidget $(widgetFile "user")
+
 postFollowR :: Handler RepPlain
 postFollowR = do
   (uid,u) <- requireAuth
@@ -20,23 +51,7 @@ postUnFollowR :: Handler RepPlain
 postUnFollowR = do
   (uid,u) <- requireAuth
   followHelper uid $ \fid -> deleteBy $ UniqueFollow uid fid
-{--
-postFollow1R :: Handler RepPlain
-postFollow1R = do
-  (uid,u) <- requireAuth
-  mid <- runInputPost $ fmap fromSinglePiece $ ireq hiddenField "followuid"
-  case mid of
-    Just fid -> runDB $ do
-      mf <- getBy $ UniqueFollow uid fid
-      case mf of
-        Just _ -> do
-          deleteBy $ UniqueFollow uid fid
-        Nothing -> do
-          insert $ Follow uid fid
-          return ()
-      return $ RepPlain $ toContent $ toSinglePiece fid
-    Nothing -> return $ RepPlain $ toContent T.empty
---}
+
 followHelper :: UserId -> (UserId -> YesodDB FashionAd FashionAd a) 
                 -> Handler RepPlain
 followHelper uid dbop = do

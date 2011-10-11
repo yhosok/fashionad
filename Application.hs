@@ -48,7 +48,7 @@ getRobotsR = return $ RepPlain $ toContent ("User-agent: *" :: ByteString)
 -- performs initialization and creates a WAI application. This is also the
 -- place to put your migrate statements to have automatic database
 -- migrations handled by Yesod.
-withFashionAd :: AppConfig -> Logger -> (Application -> IO a) -> IO ()
+withFashionAd :: Settings.AppConfig -> Logger -> (Application -> IO a) -> IO ()
 withFashionAd conf logger f = do
     s <- static Settings.staticDir
     Settings.withConnectionPool conf $ \p -> do
@@ -74,7 +74,7 @@ withDevelAppPort =
     go :: ((Int, Application) -> IO ()) -> IO ()
     go f = do
         conf <- Settings.loadConfig Settings.Development
-        let port = appPort conf
+        let port = Settings.appPort conf
         logger <- makeLogger
         logString logger $ "Devel application launched, listening on port " ++ show port
         withFashionAd conf logger $ \app -> f (port, debugHandle (logHandle logger) app)

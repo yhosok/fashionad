@@ -9,8 +9,9 @@
 /coordinations CoordinationsR GET
 /coordinations/add AddCoordinationR GET POST
 /coordinations/#CoordinationId/del DelCoordinationR POST
-/coordinations/#CoordinationId/img_s CoordinationImgSR GET
-/coordinations/#CoordinationId/img_l CoordinationImgLR GET
+
+/coordination/#CoordinationId/img_s CoordinationImgSR GET
+/coordination/#CoordinationId/img_l CoordinationImgLR GET
 /coordination/#CoordinationId CoordinationR GET POST
 
 /coordination/#CoordinationId/items ItemsR GET
@@ -23,8 +24,12 @@
 /coordination/#CoordinationId/user/#UserId/rating RatingR GET POST
 
 /users UsersR GET
-/user/follow FollowR POST
-/user/unfollow UnFollowR POST
 /user/#UserId/following FollowingR GET
 /user/#UserId/followers FollowersR GET
 /user/#UserId/mypage MyPageR GET
+/user/#UserId UserR GET
+
+/profile ProfileR GET POST
+
+/follow FollowR POST
+/unfollow UnFollowR POST

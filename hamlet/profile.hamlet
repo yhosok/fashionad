@@ -1,0 +1,8 @@
+<div #profile-form>
+  <form method="post" action="@{ProfileR}">
+    <fieldset>
+      <legend>
+        Your Profile
+      ^{userform}
+    <div .fm-submit>
+      <input type="submit" value="Update">

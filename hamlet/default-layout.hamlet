@@ -11,9 +11,11 @@
           <img src=@{StaticR img_logo_gif} alt="FashionAd" .logo>
         <div #secondary_menu>
           $maybe u <- ma
-            Welcome #{userIdent $ snd u}
+            <a href=@{ProfileR}>Your Profile
+            <a href=@{AuthR LogoutR}>Logout
+            <a href=@{UserR $ fst u}>Welcome #{showFullName $ snd u}
           $nothing
-            <a href=@{AuthR LoginR}>login
+            <a href=@{AuthR LoginR}>Login
       <div #wrapper>
         <div #content>
           $maybe msg <- mmsg
