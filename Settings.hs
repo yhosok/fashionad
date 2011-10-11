@@ -93,7 +93,7 @@ loadConfig env = do
     return $ AppConfig {
       appEnv = env
     , appPort = read portS
-    , appRoot = pack "" --(hostS ++ ":" ++ portS)
+    , appRoot = pack "" -- (hostS ++ ":" ++ portS)
     , connectionPoolSize = read connectionPoolSizeS
     }
 

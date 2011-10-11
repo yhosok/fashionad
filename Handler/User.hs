@@ -38,7 +38,11 @@ postProfileR = getProfileR
 getUserR :: UserId -> Handler RepHtml
 getUserR uid = do
   requireAuth
-  u <- runDB $ get404 uid
+  u <- do
+    mu <- runDB $ get uid
+    case mu of
+      Just u -> return u
+      Nothing -> notFound
   fashionAdLayout uid $ do
     addWidget $(widgetFile "user")
 

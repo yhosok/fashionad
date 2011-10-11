@@ -3,7 +3,7 @@
   <div #infos>
     $maybe user <- muser
       <p .user-name>
-        #{userIdent user}
+        #{userFullName user}
     $maybe u <- mu
       $if not $ isMyInfo u
         <p .user-follow>
