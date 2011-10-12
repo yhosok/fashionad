@@ -3,8 +3,8 @@
 {-# LANGUAGE CPP #-}
 module Foundation
     ( FashionAd (..)
-    , FashionAdMessage (..)
     , FashionAdRoute (..)
+    , FashionAdMessage (..)
     , resourcesFashionAd
     , Handler
     , Widget
@@ -23,25 +23,30 @@ import Settings.StaticFiles
 import Yesod.Auth
 import Yesod.Auth.OpenId
 import Yesod.Auth.Email
---import Yesod.Auth.Message as Msg
+import Yesod.Default.Config
+import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Logger (Logger, logLazyText)
 import qualified Settings
-import System.Directory
 import qualified Data.ByteString.Lazy as L
-import Database.Persist.GenericSql
-import Settings (hamletFile, cassiusFile, luciusFile, juliusFile, widgetFile)
-import Model
-import Data.Maybe (isJust)
-import Control.Monad (join, unless)
-import Network.Mail.Mime
-import qualified Data.Text.Lazy.Encoding
-import Text.Jasmine (minifym)
 import qualified Data.Text as T
-import Data.Text (Text)
-import Web.ClientSession (getKey)
+import Data.Text(Text)
+import Data.Maybe (isJust)
+import Control.Monad (join)
+import Network.Mail.Mime
 import Text.Blaze.Renderer.Utf8 (renderHtml)
-import Text.Hamlet (shamlet)
+import qualified Database.Persist.Base
+import Database.Persist.GenericSql
+import Settings (widgetFile)
+import Model
+import Text.Jasmine (minifym)
+import Web.ClientSession (getKey)
+import Text.Hamlet (hamletFile,shamlet)
 import Text.Shakespeare.Text (stext)
+#if PRODUCTION
+import Network.Mail.Mime (sendmail)
+#else
+import qualified Data.Text.Lazy.Encoding
+#endif
 
 import Yesod.Form.Jquery
 
@@ -52,10 +57,10 @@ import Yesod.Form.I18n.Japanese
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
 data FashionAd = FashionAd
-    { settings :: Settings.AppConfig
+    { settings :: AppConfig DefaultEnv
     , getLogger :: Logger
     , getStatic :: Static -- ^ Settings for static file serving.
-    , connPool :: Settings.ConnectionPool -- ^ Database connection pool.
+    , connPool :: Database.Persist.Base.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
     }
 
 mkMessage "FashionAd" "messages" "en"
@@ -84,7 +89,7 @@ mkYesodData "FashionAd" $(parseRoutesFile "config/routes")
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod FashionAd where
-    approot = Settings.appRoot . settings
+    approot = appRoot . settings
 
     -- Place the session key file in the config folder
     encryptKey _ = fmap Just $ getKey "config/client_session_key.aes"
@@ -93,14 +98,20 @@ instance Yesod FashionAd where
         mmsg <- getMessage
         ma <- maybeAuth
         y <- getYesod
+
+        -- We break up the default layout into two components:
+        -- default-layout is the contents of the body tag, and
+        -- default-layout-wrapper is the entire page. Since the final
+        -- value passed to hamletToRepHtml cannot be a widget, this allows
+        -- you to use normal widget features in default-layout.
+
         pc <- widgetToPageContent $ do
-            addCassius $(Settings.cassiusFile "default-layout")
-            addJulius $(Settings.juliusFile "default-layout")
             addScriptEither $ urlJqueryJs y
             addScriptEither $ urlJqueryUiJs y
             addStylesheetEither $ urlJqueryUiCss y
-            widget
-        ihamletToRepHtml $(Settings.ihamletFile "default-layout")
+            $(widgetFile "normalize")
+            $(widgetFile "default-layout")
+        hamletToRepHtml $(hamletFile "hamlet/default-layout-wrapper.hamlet")
       where showFullName u | T.null (userFullName u) = "<not set yourname>"
                            | otherwise = userFullName u
     
@@ -120,27 +131,16 @@ instance Yesod FashionAd where
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
     -- users receiving stale content.
-    addStaticContent ext' _ content = do
-        let fn = base64md5 content ++ '.' : T.unpack ext'
-        let content' =
-                if ext' == "js"
-                    then case minifym content of
-                            Left _ -> content
-                            Right y -> y
-                    else content
-        let statictmp = Settings.staticDir ++ "/tmp/"
-        liftIO $ createDirectoryIfMissing True statictmp
-        let fn' = statictmp ++ fn
-        exists <- liftIO $ doesFileExist fn'
-        unless exists $ liftIO $ L.writeFile fn' content'
-        return $ Just $ Right (StaticR $ StaticRoute ["tmp", T.pack fn] [], [])
+    addStaticContent = addStaticContentExternal minifym base64md5 Settings.staticDir (StaticR . flip StaticRoute [])
 
+    -- Enable Javascript async loading
+    yepnopeJs _ = Just $ Right $ StaticR js_modernizr_js
 
 -- How to run database actions.
 instance YesodPersist FashionAd where
     type YesodPersistBackend FashionAd = SqlPersist
     runDB f = liftIOHandler
-            $ fmap connPool getYesod >>= Settings.runConnectionPool f
+            $ fmap connPool getYesod >>= Database.Persist.Base.runPool (undefined :: Settings.PersistConfig) f
 
 instance YesodAuth FashionAd where
     type AuthId FashionAd = UserId
@@ -157,6 +157,7 @@ instance YesodAuth FashionAd where
             Nothing -> do
                 fmap Just $ insert $ defaultUser (credsIdent creds)
 
+    -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins = [ authOpenId
                   , authEmail
                   ]
@@ -254,4 +255,3 @@ defaultUser ident = User
                   , userFullName = ""
                   , userIntroduction = Nothing
                   }
-                            

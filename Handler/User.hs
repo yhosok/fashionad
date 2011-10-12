@@ -29,7 +29,7 @@ getProfileR = do
       redirect RedirectTemporary $ CoordinationsR
     _ -> return ()
   fashionAdLayout uid $ do
-    addCassius $(cassiusFile "form")
+    $(widgetFile "form")
     addWidget $(widgetFile "profile")
 
 postProfileR :: Handler RepHtml

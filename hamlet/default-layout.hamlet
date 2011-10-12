@@ -1,43 +1,34 @@
-!!!
-<html>
-  <head>
-    <title>#{pageTitle pc}
-    <link rel="stylesheet" href=@{StaticR css_normalize_css}>
-    ^{const $ pageHead pc}
-  <body>
-    <div #container>
-      <div #header>
-        <a href=@{RootR} alt="Home">
-          <img src=@{StaticR img_logo_gif} alt="FashionAd" .logo>
-        <div #secondary_menu>
-          $maybe u <- ma
-            <a href=@{ProfileR}>Your Profile
-            <a href=@{AuthR LogoutR}>Logout
-            <a href=@{UserR $ fst u}>Welcome #{showFullName $ snd u}
-          $nothing
-            <a href=@{AuthR LoginR}>Login
-      <div #wrapper>
-        <div #content>
-          $maybe msg <- mmsg
-            <div #message>#{msg}
-          ^{const $ pageBody pc}
-      <div #navigation>
-        <ul .navi>
-          <li>
-            <a href=@{CoordinationsR}>
-              _{MsgCoordinationList}
-          $maybe u <- ma
-            <li>
-              <a href=@{AddCoordinationR}>_{MsgAddCoordination}
-            <li>
-              <a href=@{UsersR}>_{MsgUserList}
-            <li>
-              <a href=@{AuthR LogoutR}>Logout
+<div #container>
+  <div #header>
+    <a href=@{RootR} alt="Home">
+      <img src=@{StaticR img_logo_gif} alt="FashionAd" .logo>
+    <div #secondary_menu>
+      $maybe u <- ma
+        <a href=@{ProfileR}>Your Profile
+        <a href=@{AuthR LogoutR}>Logout
+        <a href=@{UserR $ fst u}>Welcome #{showFullName $ snd u}
+      $nothing
+        <a href=@{AuthR LoginR}>Login
+  <div #wrapper>
+    <div #content>
+      $maybe msg <- mmsg
+        <div #message>#{msg}
+      ^{widget}
+  <div #navigation>
+    <ul .navi>
+      <li>
+        <a href=@{CoordinationsR}>
+          _{MsgCoordinationList}
+      $maybe u <- ma
+        <li>
+          <a href=@{AddCoordinationR}>_{MsgAddCoordination}
+        <li>
+          <a href=@{UsersR}>_{MsgUserList}
+        <li>
+          <a href=@{AuthR LogoutR}>Logout
       <!--div #extra-->
-      <div #footer>
-        <p>
-          powered by the #
-          <a href="http://docs.yesodweb.com/">Yesod Web Framework
-          .
-
- 
+  <div #footer>
+    <p>
+      powered by the #
+      <a href="http://docs.yesodweb.com/">Yesod Web Framework
+      .

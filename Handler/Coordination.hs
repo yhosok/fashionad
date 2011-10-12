@@ -95,7 +95,7 @@ dispCoordination mcf mif mrf cid= do
   ratingform <- widget (ratingForm cid uid (snd <$> mr)) mrf
   fashionAdLayout (coordinationUser c) $ do
     let isNew = False
-    addCassius $(cassiusFile "form")
+    $(widgetFile "form")
     addWidget $(widgetFile "coordination")
   where
     widget alt mf = maybe (genForm alt) return mf
@@ -131,7 +131,7 @@ getAddCoordinationR = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   fashionAdLayout uid $ do
-    addCassius $(cassiusFile "form")
+    $(widgetFile "form")
     addWidget $(widgetFile "newcoordination")
 
 postAddCoordinationR :: Handler RepHtml
