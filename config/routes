@@ -32,4 +32,4 @@
 /profile ProfileR GET POST
 
 /follow FollowR POST
-/unfollow UnFollowR POST
+

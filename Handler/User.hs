@@ -38,6 +38,8 @@ postProfileR = getProfileR
 getUserR :: UserId -> Handler RepHtml
 getUserR uid = do
   requireAuth
+-- why internal error from get404 ???
+--  u <- runDB $ get404 uid
   u <- do
     mu <- runDB $ get uid
     case mu of
@@ -48,6 +50,20 @@ getUserR uid = do
 
 postFollowR :: Handler RepPlain
 postFollowR = do
+  (uid,u) <- requireAuth
+  mfuid <- runInputPost $ fmap fromSinglePiece $ ireq hiddenField "followuid"
+  case mfuid of
+    Nothing -> return $ RepPlain $ toContent T.empty
+    Just fuid -> do
+      mf <- runDB $ getBy $ UniqueFollow uid fuid
+      case mf of
+        Just (fid,f) -> runDB $ delete fid >> retKey fuid
+        Nothing -> (runDB $ insert $ Follow  uid fuid) >> retKey fuid
+  where retKey fuid = return $ RepPlain $ toContent $ toSinglePiece fuid
+
+{--
+postFollowR' :: Handler RepPlain
+postFollowR' = do
   (uid,u) <- requireAuth
   followHelper uid $ \fid -> insert $ Follow uid fid
 
@@ -65,6 +81,7 @@ followHelper uid dbop = do
       runDB $ dbop fid
       return $ RepPlain $ toContent $ toSinglePiece fid
     Nothing -> return $ RepPlain $ toContent T.empty
+--}
 
 getFollowingR :: UserId -> Handler RepHtml
 getFollowingR uid = do
