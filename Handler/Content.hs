@@ -12,19 +12,19 @@ userInfoWidget uid = do
                                       <*> count [FollowFollowed ==. uid]
                                       <*> count [CoordinationUser ==. uid]
   follow <- followWidget uid
-  return $(widgetFile "userinfo")
+  return $(widgetFile "user/userinfo")
   where isMyInfo = (==uid) . fst
 
 fashionAdLayout :: UserId -> Widget -> Handler RepHtml
 fashionAdLayout uid main = do
   sidebar <- userInfoWidget uid
   defaultLayout $ do
-    $(widgetFile "content-layout")
+    $(widgetFile "default/content-layout")
 
 followWidget :: UserId -> Handler Widget
 followWidget uid = do
   (lid,_) <- requireAuth
   mf <- runDB $ getBy $ UniqueFollow lid uid
-  return $(widgetFile "follow")
+  return $(widgetFile "user/follow")
   where uidtxt = toSinglePiece uid
         isFollow = maybe False (const True)
