@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings, FlexibleContexts#-}
 module Handler.Rating where
 
 import Data.Text (Text, pack, append)
@@ -23,8 +22,7 @@ rateValues = [1..5]
 rates :: [(Text, Int)]
 rates = map (\x -> (pack $ show x, x)) rateValues
 
-starField :: (Eq a, Show a, RenderMessage FashionAd FormMessage) =>
-             [(Text, a)] -> Field sub FashionAd a
+starField :: (Eq a, Show a) => [(Text, a)] -> Field sub FashionAd a
 starField opts = Field
   { fieldParse = return . starParser
   , fieldView = \theId name val isReq -> 

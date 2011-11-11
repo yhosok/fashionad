@@ -1,6 +1,3 @@
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, TypeFamilies #-}
-{-# LANGUAGE OverloadedStrings, MultiParamTypeClasses #-}
-{-# LANGUAGE CPP #-}
 module Foundation
     ( FashionAd (..)
     , FashionAdRoute (..)
@@ -17,6 +14,7 @@ module Foundation
     , AuthRoute (..)
     ) where
 
+import Prelude
 import Yesod
 import Yesod.Static (Static, base64md5, StaticRoute(..))
 import Settings.StaticFiles
