@@ -5,3 +5,4 @@ static/tmp
 #*
 *sqlite3
 *.aes
+.static-cache
