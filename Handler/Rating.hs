@@ -17,7 +17,7 @@ ratingForm cid uid mr= \html -> do
   liftIO $ print rrating
   (rcomment, vcomment) <- mopt textareaField "Comment" (ratingComment <$> mr)
   return (Rating <$> ruid <*> rcid <*> rrating <*> rcomment, 
-          $(widgetFile "ratingform"))
+          $(widgetFile "coordination/ratingform"))
 
 rateValues = [1..5]
 

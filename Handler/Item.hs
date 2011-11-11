@@ -15,7 +15,7 @@ itemForm cid mi = \html -> do
   (rprice, vprice) <- mopt priceField "price" (fmap itemPrice mi)
   let vs = [vname,vkind,vlink,vprice]
   return (Item <$> rname <*> rcid <*> rkind <*> rlink <*> rprice,
-          $(widgetFile "itemform"))
+          $(widgetFile "coordination/itemform"))
   where priceField = check valPrice intField
         valPrice p | p < 0 = Left priceErrorMsg
                    | otherwise = Right p

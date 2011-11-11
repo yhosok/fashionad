@@ -29,8 +29,8 @@ getProfileR = do
       redirect RedirectTemporary $ CoordinationsR
     _ -> return ()
   fashionAdLayout uid $ do
-    $(widgetFile "form")
-    addWidget $(widgetFile "profile")
+    $(widgetFile "user/form")
+    addWidget $(widgetFile "user/profile")
 
 postProfileR :: Handler RepHtml
 postProfileR = getProfileR
@@ -46,7 +46,7 @@ getUserR uid = do
       Just u -> return u
       Nothing -> notFound
   fashionAdLayout uid $ do
-    addWidget $(widgetFile "user")
+    addWidget $(widgetFile "user/user")
 
 postFollowR :: Handler RepPlain
 postFollowR = do
@@ -105,6 +105,6 @@ userListPage uid filter = do
   us <- runDB $ selectList filter []  
   users <- forM us $ \user@(uid',_) -> 
     fmap (\fw -> (user,fw)) $ followWidget uid'
-  fashionAdLayout uid $(widgetFile "users")
+  fashionAdLayout uid $(widgetFile "user/users")
   where ident = userIdent . snd . fst
         isMyInfo = (==uid) . fst . fst

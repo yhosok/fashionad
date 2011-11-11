@@ -33,7 +33,7 @@ coordForm uid mc = \html -> do
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
-            $(widgetFile "coordform"))
+            $(widgetFile "coordination/coordform"))
   where 
     notEmpty = maybe False (not . L.null . fileContent)
     content = maybe B.empty (B.pack . L.unpack . fileContent)
@@ -61,7 +61,7 @@ coordListPage uid filter msgtitle = do
   cs <- runDB $ selectList filter []
   rows <- coordinationList cs
   fashionAdLayout uid $ do
-    addWidget $(widgetFile "coordinations") 
+    addWidget $(widgetFile "coordination/coordinations") 
 
 coordinationList :: [(CoordinationId, Coordination)] -> Handler Widget
 coordinationList cs = do
@@ -74,7 +74,7 @@ coordinationList cs = do
     ctitle = coordinationTitle . snd . fst
     rwidget = snd
     colcnt = 4
-    widget row = addWidget $(widgetFile "coordlistrow")
+    widget row = addWidget $(widgetFile "coordination/coordlistrow")
     toRows xs = case splitAt colcnt xs of
       (ys,[]) ->  ys:[]
       (ys,zs) ->  ys:toRows zs
@@ -95,8 +95,8 @@ dispCoordination mcf mif mrf cid= do
   ratingform <- widget (ratingForm cid uid (snd <$> mr)) mrf
   fashionAdLayout (coordinationUser c) $ do
     let isNew = False
-    $(widgetFile "form")
-    addWidget $(widgetFile "coordination")
+    $(widgetFile "default/form")
+    addWidget $(widgetFile "coordination/coordination")
   where
     widget alt mf = maybe (genForm alt) return mf
     genForm form = snd . fst <$> (generateFormPost $ form)
@@ -131,8 +131,8 @@ getAddCoordinationR = do
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
   fashionAdLayout uid $ do
-    $(widgetFile "form")
-    addWidget $(widgetFile "newcoordination")
+    $(widgetFile "default/form")
+    addWidget $(widgetFile "coordination/newcoordination")
 
 postAddCoordinationR :: Handler RepHtml
 postAddCoordinationR = getAddCoordinationR

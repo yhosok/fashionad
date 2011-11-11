@@ -110,8 +110,8 @@ instance Yesod FashionAd where
             addScriptEither $ urlJqueryUiJs y
             addStylesheetEither $ urlJqueryUiCss y
             $(widgetFile "normalize")
-            $(widgetFile "default-layout")
-        hamletToRepHtml $(hamletFile "hamlet/default-layout-wrapper.hamlet")
+            $(widgetFile "default/default-layout")
+        hamletToRepHtml $(hamletFile "templates/default/default-layout-wrapper.hamlet")
       where showFullName u | T.null (userFullName u) = "<not set yourname>"
                            | otherwise = userFullName u
     
