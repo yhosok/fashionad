@@ -1,6 +1,9 @@
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings #-}
 module Handler.Content where
 
-import Import
+import Control.Applicative
+
+import Foundation
 
 userInfoWidget :: UserId -> Handler Widget
 userInfoWidget uid = do

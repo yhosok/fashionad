@@ -1,8 +1,10 @@
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings #-}
 module Handler.Item where
 
+import Control.Applicative
 import Data.Text (Text, pack)
 
-import Import
+import Foundation
 
 itemForm :: CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
 itemForm cid mi = \html -> do

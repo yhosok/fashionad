@@ -1,10 +1,11 @@
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings, FlexibleContexts#-}
 module Handler.Rating where
 
 import Control.Applicative
 import Data.Text (Text, pack, append)
 import Data.List (genericLength)
 
-import Import
+import Foundation
 import Settings.StaticFiles
 
 ratingForm :: CoordinationId -> UserId -> Maybe Rating -> 
