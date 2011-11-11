@@ -1,7 +1,6 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings #-}
 module Handler.Coordination where
 
-import Control.Applicative
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Text (Text)
@@ -12,7 +11,7 @@ import Data.List (genericLength)
 
 import Graphics.GD
 
-import Foundation
+import Import
 import Handler.Item
 import Handler.Rating
 import Handler.Content

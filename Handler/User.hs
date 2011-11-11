@@ -1,14 +1,13 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings #-}
 module Handler.User where
 
-import Control.Applicative
 import Control.Monad (forM)
 import qualified Data.Text as T (Text, pack, empty)
 
 import Database.Persist.Join (SelectOneMany (..), selectOneMany)
 import Database.Persist.Join.Sql (runJoin)
 
-import Foundation
+import Import
 import Handler.Content
 
 userForm :: User -> Html -> Form FashionAd FashionAd (FormResult User, Widget)

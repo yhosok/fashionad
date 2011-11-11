@@ -8,7 +8,7 @@ module Application
     , withDevelAppPort
     ) where
 
-import Foundation
+import Import
 import Settings
 import Yesod.Static
 import Yesod.Auth
