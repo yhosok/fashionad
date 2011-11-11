@@ -52,7 +52,6 @@ library
                 GADTs
                 GeneralizedNewtypeDeriving
 
-
 executable         fashionad
     if flag(devel)
         Buildable: False

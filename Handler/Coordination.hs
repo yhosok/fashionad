@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings #-}
 module Handler.Coordination where
 
 import qualified Data.ByteString as B
@@ -88,17 +87,20 @@ dispCoordination mcf mif mrf cid= do
     _ -> return mc
   isMine <- return $ (coordinationUser c) == uid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
-  coordform <- widget (coordForm uid mc) mcf
-  itemform <-  widget (itemForm cid Nothing) mif
   mr <- runDB $ getBy $ UniqueRating uid cid
-  ratingform <- widget (ratingForm cid uid (snd <$> mr)) mrf
+  coordform <- isNothingGenForm (coordForm uid mc) mcf
+  itemform <-  isNothingGenForm (itemForm cid Nothing) mif
+  ratingform <- isNothingGenForm (ratingForm cid uid (snd <$> mr)) mrf
   fashionAdLayout (coordinationUser c) $ do
     let isNew = False
     $(widgetFile "default/form")
     addWidget $(widgetFile "coordination/coordination")
-  where
-    widget alt mf = maybe (genForm alt) return mf
-    genForm form = snd . fst <$> (generateFormPost $ form)
+
+isNothingGenForm :: (Html -> Form FashionAd FashionAd (FormResult a, Widget)) ->
+                    Maybe Widget ->
+                    Handler Widget
+isNothingGenForm alt mf = maybe (genForm alt) return mf
+  where genForm form = snd . fst <$> (generateFormPost $ form)
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
 getCoordinationR cid = do

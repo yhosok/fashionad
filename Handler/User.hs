@@ -55,7 +55,7 @@ postFollowR = do
     Just fuid -> do
       mf <- runDB $ getBy $ UniqueFollow uid fuid
       case mf of
-        Just (fid,f) -> runDB $ delete fid >> retKey fuid
+        Just (fid,f) -> (runDB $ delete fid) >> retKey fuid
         Nothing -> (runDB $ insert $ Follow  uid fuid) >> retKey fuid
   where retKey fuid = return $ RepPlain $ toContent $ toSinglePiece fuid
 
