@@ -6,3 +6,4 @@ static/tmp
 *sqlite3
 *.aes
 .static-cache
+.dist-scion
