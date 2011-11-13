@@ -2,11 +2,8 @@ module Handler.Coordination where
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
-import Data.Text (Text)
-import Control.Monad (guard)
 import qualified Data.Map as M
 import Control.Monad (forM)
-import Data.List (genericLength)
 
 import Graphics.GD
 
@@ -14,7 +11,6 @@ import Import
 import Handler.Item
 import Handler.Rating
 import Handler.Content
-import Settings.StaticFiles
 
 coordForm :: UserId -> 
              Maybe Coordination -> 
@@ -45,18 +41,18 @@ coordForm uid mc = \html -> do
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
-  (uid, u) <- requireAuth
+  (uid, _) <- requireAuth
   coordListPage uid [] $ MsgCoordinationTitle
 
 getMyPageR :: UserId -> Handler RepHtml
 getMyPageR uid = do
-  requireAuth
+  (_,_) <- requireAuth
   coordListPage uid [CoordinationUser ==. uid] $ MsgMyPage (toSinglePiece uid)
 
 coordListPage :: UserId -> [Filter Coordination] -> 
                  FashionAdMessage -> Handler RepHtml
-coordListPage uid filter msgtitle = do
-  cs <- runDB $ selectList filter []
+coordListPage uid fc msgtitle = do
+  cs <- runDB $ selectList fc []
   rows <- coordinationList cs
   fashionAdLayout uid $ do
     addWidget $(widgetFile "coordination/coordinations") 
@@ -104,12 +100,12 @@ isNothingGenForm alt mf = maybe (genForm alt) return mf
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
 getCoordinationR cid = do
-  (uid,u) <- requireAuth
+  (uid,_) <- requireAuth
   mc <- runDB $ get cid
   case mc of
     Nothing -> redirect RedirectTemporary $ CoordinationsR
     _ -> return ()
-  ((res, coordform), enc) <- runFormPost $ coordForm uid mc
+  ((res, coordform), _) <- runFormPost $ coordForm uid mc
   case res of
     FormSuccess c -> do
       runDB $ replace cid c
@@ -148,7 +144,7 @@ getCoordinationImgLR cid = coordinationImg cid (240,360)
 
 coordinationImg :: CoordinationId -> (Float , Float) -> Handler (ContentType, Content)
 coordinationImg cid areaSize = do
-  (uid,u) <- requireAuth
+  (_,_) <- requireAuth
   mc <- runDB $ get cid
   case mc of
     Just c -> do
@@ -166,11 +162,11 @@ resizeBSImage (mw,mh) bsimg = do
   where
     size w h | realToFrac w > (realToFrac h * mw / mh) = (round mw, calc h w mw)
              | otherwise = (calc w h mh, round mh)
-    calc x y max = round $ (realToFrac x / realToFrac y) * max
+    calc x y ml = round $ (realToFrac x / realToFrac y) * ml
 
 getRatingR :: CoordinationId -> UserId -> Handler RepHtml
 getRatingR cid uid = do
-  requireAuth
+  (_,_) <- requireAuth
   ratingform <- updateRating cid uid
   dispCoordination Nothing Nothing (Just ratingform) cid
 
@@ -179,9 +175,9 @@ postRatingR = getRatingR
 
 getItemR :: CoordinationId -> ItemId -> Handler RepHtml
 getItemR cid iid = do
-  (uid,u) <- requireAuth
+  (_,_) <- requireAuth
   mi <- runDB $ get iid
-  ((res, itemform), enc) <- runFormPost $ itemForm cid mi
+  ((res, itemform), _) <- runFormPost $ itemForm cid mi
   case res of
     FormSuccess i -> do
       runDB $ replace iid i
@@ -195,11 +191,11 @@ postItemR = getItemR
 
 getAddItemR ::CoordinationId -> Handler RepHtml
 getAddItemR cid = do
-  (uid, u) <- requireAuth
-  ((res,itemform),enc) <- runFormPost $ itemForm cid Nothing
+  (_,_) <- requireAuth
+  ((res,itemform),_) <- runFormPost $ itemForm cid Nothing
   case res of
     FormSuccess i -> do
-      iid <- runDB $ insert i
+      _ <- runDB $ insert i
       setMessage "Added Item"
       redirect RedirectTemporary $ CoordinationR cid
     _ -> return ()
@@ -209,7 +205,7 @@ postAddItemR :: CoordinationId -> Handler RepHtml
 postAddItemR = getAddItemR
 
 postDelItemR :: CoordinationId -> ItemId -> Handler RepPlain
-postDelItemR cid iid = do
-  (uid, u) <- requireAuth
+postDelItemR _ iid = do
+  (_,_) <- requireAuth
   runDB $ deleteWhere [ItemId ==. iid]
   return $ RepPlain $ toContent $ toSinglePiece iid

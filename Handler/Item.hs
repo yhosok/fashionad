@@ -1,6 +1,6 @@
 module Handler.Item where
 
-import Data.Text (Text, pack)
+import Data.Text (pack)
 
 import Import
 

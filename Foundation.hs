@@ -48,7 +48,7 @@ import qualified Data.Text.Lazy.Encoding
 
 import Yesod.Form.Jquery
 
-import Yesod.Form.I18n.Japanese
+import Yesod.Form.I18n.Japanese()
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application

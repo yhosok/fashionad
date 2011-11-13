@@ -1,6 +1,6 @@
 module Handler.Rating where
 
-import Data.Text (Text, pack, append)
+import Data.Text (pack, append)
 import Data.List (genericLength)
 
 import Import
@@ -17,6 +17,7 @@ ratingForm cid uid mr= \html -> do
   return (Rating <$> ruid <*> rcid <*> rrating <*> rcomment, 
           $(widgetFile "coordination/ratingform"))
 
+rateValues :: [Int]
 rateValues = [1..5]
 
 rates :: [(Text, Int)]
@@ -25,17 +26,17 @@ rates = map (\x -> (pack $ show x, x)) rateValues
 starField :: (Eq a, Show a) => [(Text, a)] -> Field sub FashionAd a
 starField opts = Field
   { fieldParse = return . starParser
-  , fieldView = \theId name val isReq -> 
-      starWidget (op name) val values isSel
+  , fieldView = \_ nm val _ -> 
+      starWidget (op nm) val values isSel
   }
  where
     values = map fst opts
     starParser [] = Right Nothing
     starParser (x:_) = case x of
       "" -> Right Nothing
-      x  -> case lookup x opts of
+      x'  -> case lookup x' opts of
               Just y -> Right $ Just y
-              Nothing -> Left $ SomeMessage $ MsgInvalidEntry x 
+              Nothing -> Left $ SomeMessage $ MsgInvalidEntry x'
     isSel v = either (const False) ((==v) . pack . show)
     op n = StarOp {name = n, isDisabled = False, split = Nothing}
 
@@ -45,14 +46,16 @@ averageRatingWidget cid = do
   return $ do
     starWidget op (roundVal rs) values isSel
   where
-    rates = map (ratingValue . snd) 
+    roundVal :: [(RatingId, Rating)] -> Int
+    roundVal = round . (*) (fromIntegral split') . average . rvs
+    average :: [Int] -> Double
     average xs = realToFrac (sum xs) / genericLength xs
-    name = append "rating-" . toSinglePiece
-    split = 4
-    values = map (pack . show) [1..(last rateValues * split)]
-    roundVal = round . (*) (fromIntegral split) . average . rates
+    rvs = map (ratingValue . snd) 
+    nm = append "rating-" . toSinglePiece
+    split' = 4
+    values = map (pack . show) [1..(last rateValues * split')]
     isSel v = (==v) . pack . show
-    op = StarOp {name = name cid, isDisabled = True, split = Just split}
+    op = StarOp {name = nm cid, isDisabled = True, split = Just split'}
 
 data StarOptions =  StarOp { name :: Text, 
                              isDisabled :: Bool,
@@ -79,11 +82,11 @@ getRatingsR = undefined
 updateRating :: CoordinationId -> UserId -> Handler Widget
 updateRating cid uid = do
   mr <- runDB $ getBy $ UniqueRating uid cid
-  ((res, form), enc) <- runFormPost $ ratingForm cid uid (snd <$> mr)
+  ((res, form), _) <- runFormPost $ ratingForm cid uid (snd <$> mr)
   case res of
     FormSuccess r -> do
       case mr of 
-        Nothing -> do runDB $ insert  r
+        Nothing -> do _ <- runDB $ insert  r
                       setMessage "Add Rating"
         Just (rid,_) -> do runDB $ replace rid r
                            setMessage "Updated Rating"
@@ -92,6 +95,6 @@ updateRating cid uid = do
 
 postDelRatingR :: CoordinationId -> RatingId -> Handler RepHtml
 postDelRatingR cid rid = do
-  (uid, u) <- requireAuth
+  (_,_) <- requireAuth
   runDB $ deleteWhere [RatingId ==. rid]
   redirect RedirectTemporary $ CoordinationR cid
