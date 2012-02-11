@@ -6,7 +6,7 @@
       $maybe u <- ma
         <a href=@{ProfileR}>Your Profile
         <a href=@{AuthR LogoutR}>Logout
-        <a href=@{UserR $ fst u}>Welcome #{showFullName $ snd u}
+        <a href=@{UserR $ entityKey u}>Welcome #{showFullName $ entityVal u}
       $nothing
         <a href=@{AuthR LoginR}>Login
   <div #wrapper>

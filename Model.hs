@@ -4,6 +4,7 @@ import Prelude
 import Yesod
 import Data.Text (Text)
 import Data.ByteString
+import Database.Persist.Quasi
 
 -- You can define all of your database entities in the entities file.
 -- You can find more information on persistent and how to declare entities
@@ -19,4 +20,5 @@ data Kind = Hat | Shirt | Pants | Inner
 
 derivePersistField "Kind"
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] $(persistFile "config/models")
+share [mkPersist sqlSettings, mkMigrate "migrateAll"]
+    $(persistFileWith lowerCaseSettings "config/models")

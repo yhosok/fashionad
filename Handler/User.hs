@@ -1,5 +1,6 @@
 module Handler.User where
 
+import Yesod.Auth
 import Control.Monad (forM)
 import qualified Data.Text as T (empty)
 
@@ -9,7 +10,7 @@ import qualified Data.Text as T (empty)
 import Import
 import Handler.Content
 
-userForm :: User -> Html -> Form FashionAd FashionAd (FormResult User, Widget)
+userForm :: User -> Form User
 userForm u = renderDivs $ User
   <$> pure (userIdent u)
   <*> pure (userPassword u)
@@ -18,13 +19,13 @@ userForm u = renderDivs $ User
 
 getProfileR :: Handler RepHtml
 getProfileR = do
-  (uid,u) <- requireAuth
+  Entity uid u <- requireAuth
   ((res,userform),enc) <- runFormPost $ userForm u
   case res of
     FormSuccess u' -> do
       runDB $ replace uid u'
       setMessage "Update Your Profile"
-      redirect RedirectTemporary $ CoordinationsR
+      redirect CoordinationsR
     _ -> return ()
   fashionAdLayout uid $ do
     $(widgetFile "user/form")
@@ -35,7 +36,7 @@ postProfileR = getProfileR
 
 getUserR :: UserId -> Handler RepHtml
 getUserR uid = do
-  (_,_) <- requireAuth
+  requireAuth
 -- why internal error from get404 ???
 --  u <- runDB $ get404 uid
   u <- do
@@ -48,16 +49,16 @@ getUserR uid = do
 
 postFollowR :: Handler RepPlain
 postFollowR = do
-  (uid,_) <- requireAuth
-  mfuid <- runInputPost $ fmap fromSinglePiece $ ireq hiddenField "followuid"
+  uid <- requireAuthId
+  mfuid <- runInputPost $ fmap fromPathPiece $ ireq hiddenField "followuid"
   case mfuid of
     Nothing -> return $ RepPlain $ toContent T.empty
     Just fuid -> do
       mf <- runDB $ getBy $ UniqueFollow uid fuid
       case mf of
-        Just (fid,_) -> (runDB $ delete fid) >> retKey fuid
+        Just (Entity fid _) -> (runDB $ delete fid) >> retKey fuid
         Nothing -> (runDB $ insert $ Follow  uid fuid) >> retKey fuid
-  where retKey fuid = return $ RepPlain $ toContent $ toSinglePiece fuid
+  where retKey fuid = return $ RepPlain $ toContent $ toPathPiece fuid
 
 {--
 postFollowR' :: Handler RepPlain
@@ -83,26 +84,26 @@ followHelper uid dbop = do
 
 getFollowingR :: UserId -> Handler RepHtml
 getFollowingR uid = do
-  (_,_) <- requireAuth
+  requireAuth
   us <- runDB $ selectList [FollowFollower ==. uid] []
-  userListPage uid [UserId <-. (map (followFollowed . snd) us)]
+  userListPage uid [UserId <-. (map (followFollowed . entityVal) us)]
 
 getFollowersR :: UserId -> Handler RepHtml
 getFollowersR uid = do
-  (_,_) <- requireAuth
+  requireAuth
   us <- runDB $ selectList [FollowFollowed ==. uid] []
-  userListPage uid [UserId <-. (map (followFollower . snd) us)]
+  userListPage uid [UserId <-. (map (followFollower . entityVal) us)]
 
 getUsersR :: Handler RepHtml
 getUsersR = do
-  (uid,_) <- requireAuth
+  uid <- requireAuthId
   userListPage uid []
   
 userListPage :: UserId -> [Filter User] -> Handler RepHtml
 userListPage uid fu = do
   us <- runDB $ selectList fu []  
-  users <- forM us $ \user@(uid',_) -> 
+  users <- forM us $ \user@(Entity uid' _) -> 
     fmap (\fw -> (user,fw)) $ followWidget uid'
   fashionAdLayout uid $(widgetFile "user/users")
-  where ident = userIdent . snd . fst
-        isMyInfo = (==uid) . fst . fst
+  where ident = userIdent . entityVal . fst
+        isMyInfo = (==uid) . entityKey . fst

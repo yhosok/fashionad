@@ -3,7 +3,7 @@
     $forall u <- users
       <tr>
         <td>
-          <a href="@{MyPageR (fst $ fst $ u)}">#{ident u}
+          <a href="@{MyPageR (entityKey $ fst $ u)}">#{ident u}
         <td>
           $if isMyInfo u
             It is yourself.

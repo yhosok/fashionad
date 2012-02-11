@@ -12,21 +12,22 @@ cabal-version:     >= 1.6
 build-type:        Simple
 homepage:          http://fashionad.yesodweb.com/
 
-Flag production
-    Description:   Build the production executable.
+Flag dev
+    Description:   Turn on development settings, like auto-reload templates.
     Default:       False
 
-Flag devel
+Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
 
 library
-    if flag(devel)
+    if flag(library-only)
         Buildable: True
     else
         Buildable: False
 
     exposed-modules: Application
+
     other-modules:   Foundation
                      Import
                      Model
@@ -41,6 +42,7 @@ library
                      Yesod.Form.I18n.Japanese
 
     ghc-options:   -Wall -threaded -O0
+    cpp-options:   -DDEVELOPMENT
 
     extensions: TemplateHaskell
                 QuasiQuotes
@@ -55,14 +57,14 @@ library
                 FlexibleContexts
 
 executable         fashionad
-    if flag(devel)
+    if flag(library-only)
         Buildable: False
 
-    if flag(production)
-        cpp-options:   -DPRODUCTION
-        ghc-options:   -Wall -threaded -O2
-    else
+    if flag(dev)
+        cpp-options:   -DDEVELOPMENT
         ghc-options:   -Wall -threaded -O0
+    else
+        ghc-options:   -Wall -threaded -O2
 
     main-is:       main.hs
 
@@ -79,24 +81,28 @@ executable         fashionad
                 FlexibleContexts
 
     build-depends: base                          >= 4          && < 5
-                 , yesod                         >= 0.9        && < 0.10
-                 , yesod-core                    >= 0.9.3      && < 0.10
-                 , yesod-auth                    >= 0.7.3      && < 0.8
-                 , yesod-static                  >= 0.3.1      && < 0.4
-                 , yesod-default                 >= 0.4        && < 0.5
-                 , yesod-form                    >= 0.3.3      && < 0.4
-                 , mime-mail                     >= 0.4        && < 0.5
+                 , yesod                         >= 0.10       && < 0.11
+                 , yesod-core                    >= 0.10       && < 0.11
+                 , yesod-auth                    >= 0.8        && < 0.9
+                 , yesod-static                  >= 0.10       && < 0.11
+                 , yesod-default                 >= 0.6        && < 0.7
+                 , yesod-form                    >= 0.4        && < 0.5
+                 , mime-mail                     >= 0.3.0.3    && < 0.5
                  , clientsession                 >= 0.7.3      && < 0.8
                  , bytestring                    >= 0.9        && < 0.10
                  , text                          >= 0.11       && < 0.12
-                 , persistent                    >= 0.6.2      && < 0.7
-                 , persistent-sqlite     >= 0.6        && < 0.7
+                 , persistent                    >= 0.8        && < 0.9
+                 , persistent-sqlite     >= 0.8        && < 0.9
                  , template-haskell
                  , hamlet                        >= 0.10       && < 0.11
                  , shakespeare-css               >= 0.10       && < 0.11
-                 , shakespeare-js                >= 0.10       && < 0.11
+                 , shakespeare-js                >= 0.11       && < 0.12
                  , shakespeare-text              >= 0.10       && < 0.11
                  , hjsmin                        >= 0.0.14     && < 0.1
+                 , monad-control                 >= 0.3        && < 0.4
+                 , wai-extra                     >= 1.0        && < 1.2
+                 , yaml                          >= 0.5        && < 0.6
+                 , http-conduit                  >= 1.2        && < 1.3
+                 , gd
                  , blaze-html
                  , containers
-                 , gd

@@ -8,15 +8,19 @@ module Settings
     , PersistConfig
     , staticRoot
     , staticDir
+    , Extra (..)
+    , parseExtra
     ) where
 
-import Prelude (FilePath, String)
+import Prelude
 import Text.Shakespeare.Text (st)
 import Language.Haskell.TH.Syntax
 import Database.Persist.Sqlite (SqliteConf)
 import Yesod.Default.Config
 import qualified Yesod.Default.Util
 import Data.Text (Text)
+import Data.Yaml
+import Control.Applicative
 
 -- | Which Persistent backend this site is using.
 type PersistConfig = SqliteConf
@@ -41,7 +45,7 @@ staticDir = "static"
 -- have to make a corresponding change here.
 --
 -- To see how this value is used, see urlRenderOverride in Foundation.hs
-staticRoot :: AppConfig DefaultEnv ->  Text
+staticRoot :: AppConfig DefaultEnv x -> Text
 staticRoot conf = [st|#{appRoot conf}/static|]
 
 
@@ -49,9 +53,18 @@ staticRoot conf = [st|#{appRoot conf}/static|]
 -- user.
 
 widgetFile :: String -> Q Exp
-#if PRODUCTION
-widgetFile = Yesod.Default.Util.widgetFileProduction
+#if DEVELOPMENT
+widgetFile = Yesod.Default.Util.widgetFileReload
 #else
-widgetFile = Yesod.Default.Util.widgetFileDebug
+widgetFile = Yesod.Default.Util.widgetFileNoReload
 #endif
 
+data Extra = Extra
+    { extraCopyright :: Text
+    , extraAnalytics :: Maybe Text -- ^ Google Analytics
+    } deriving Show
+
+parseExtra :: DefaultEnv -> Object -> Parser Extra
+parseExtra _ o = Extra
+    <$> o .:  "copyright"
+    <*> o .:? "analytics"

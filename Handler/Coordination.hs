@@ -14,12 +14,11 @@ import Handler.Content
 
 coordForm :: UserId -> 
              Maybe Coordination -> 
-             Html -> 
-             Form FashionAd FashionAd (FormResult Coordination, Widget)
+             Form Coordination
 coordForm uid mc = \html -> do
     ruid <- return $ pure uid
     (rtitle,vtitle) <- mreq textField 
-                       (FieldSettings MsgCoordinationTitle Nothing Nothing Nothing) 
+                       (FieldSettings MsgCoordinationTitle Nothing Nothing Nothing []) 
                        (fmap coordinationTitle mc)
     (rdesc,vdesc) <- mopt textareaField "Description" (fmap coordinationDesc mc)
     mfe <- askFiles
@@ -41,13 +40,13 @@ coordForm uid mc = \html -> do
 
 getCoordinationsR :: Handler RepHtml
 getCoordinationsR = do
-  (uid, _) <- requireAuth
+  Entity uid _ <- requireAuth
   coordListPage uid [] $ MsgCoordinationTitle
 
 getMyPageR :: UserId -> Handler RepHtml
 getMyPageR uid = do
-  (_,_) <- requireAuth
-  coordListPage uid [CoordinationUser ==. uid] $ MsgMyPage (toSinglePiece uid)
+  requireAuth
+  coordListPage uid [CoordinationUser ==. uid] $ MsgMyPage (toPathPiece uid)
 
 coordListPage :: UserId -> [Filter Coordination] -> 
                  FashionAdMessage -> Handler RepHtml
@@ -57,15 +56,15 @@ coordListPage uid fc msgtitle = do
   fashionAdLayout uid $ do
     addWidget $(widgetFile "coordination/coordinations") 
 
-coordinationList :: [(CoordinationId, Coordination)] -> Handler Widget
+coordinationList :: [Entity Coordination] -> Handler Widget
 coordinationList cs = do
   tdata <- forM cs $ \c -> do
-    w <- averageRatingWidget (fst c)
+    w <- averageRatingWidget (entityKey c)
     return (c, w)
   return $ mapM_ widget $ toRows tdata
   where
-    cid = fst . fst
-    ctitle = coordinationTitle . snd . fst
+    cid = entityKey . fst
+    ctitle = coordinationTitle . entityVal . fst
     rwidget = snd
     colcnt = 4
     widget row = addWidget $(widgetFile "coordination/coordlistrow")
@@ -76,23 +75,23 @@ coordinationList cs = do
 dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget -> 
                     CoordinationId -> Handler RepHtml
 dispCoordination mcf mif mrf cid= do
-  (uid,u) <- requireAuth
+  Entity uid u <- requireAuth
   mc <- runDB $ get cid
   (Just c) <- case mc of
-    Nothing -> redirect RedirectTemporary $ CoordinationsR
+    Nothing -> redirect  $ CoordinationsR
     _ -> return mc
   isMine <- return $ (coordinationUser c) == uid
   items <- runDB $ selectList [ItemCoordination ==. cid] []
   mr <- runDB $ getBy $ UniqueRating uid cid
   coordform <- isNothingGenForm (coordForm uid mc) mcf
   itemform <-  isNothingGenForm (itemForm cid Nothing) mif
-  ratingform <- isNothingGenForm (ratingForm cid uid (snd <$> mr)) mrf
+  ratingform <- isNothingGenForm (ratingForm cid uid (entityVal <$> mr)) mrf
   fashionAdLayout (coordinationUser c) $ do
     let isNew = False
     $(widgetFile "default/form")
     addWidget $(widgetFile "coordination/coordination")
 
-isNothingGenForm :: (Html -> Form FashionAd FashionAd (FormResult a, Widget)) ->
+isNothingGenForm :: Form a ->
                     Maybe Widget ->
                     Handler Widget
 isNothingGenForm alt mf = maybe (genForm alt) return mf
@@ -100,17 +99,17 @@ isNothingGenForm alt mf = maybe (genForm alt) return mf
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
 getCoordinationR cid = do
-  (uid,_) <- requireAuth
+  Entity uid _ <- requireAuth
   mc <- runDB $ get cid
   case mc of
-    Nothing -> redirect RedirectTemporary $ CoordinationsR
+    Nothing -> redirect  $ CoordinationsR
     _ -> return ()
   ((res, coordform), _) <- runFormPost $ coordForm uid mc
   case res of
     FormSuccess c -> do
       runDB $ replace cid c
       setMessage "Updated Coordination"
-      redirect RedirectTemporary $ CoordinationR cid
+      redirect  $ CoordinationR cid
     _ -> return ()
   dispCoordination (Just coordform) Nothing Nothing cid
 
@@ -119,13 +118,13 @@ postCoordinationR = getCoordinationR
 
 getAddCoordinationR ::Handler RepHtml
 getAddCoordinationR = do
-  (uid, u) <- requireAuth
+  Entity uid u <- requireAuth
   ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
   case res of
     FormSuccess c -> do
       cid <- runDB $ insert c
       setMessage "Added new Coordination"
-      redirect RedirectTemporary $ CoordinationR cid
+      redirect  $ CoordinationR cid
     _ -> return ()
   fashionAdLayout uid $ do
     $(widgetFile "default/form")
@@ -144,7 +143,7 @@ getCoordinationImgLR cid = coordinationImg cid (240,360)
 
 coordinationImg :: CoordinationId -> (Float , Float) -> Handler (ContentType, Content)
 coordinationImg cid areaSize = do
-  (_,_) <- requireAuth
+  requireAuth
   mc <- runDB $ get cid
   case mc of
     Just c -> do
@@ -166,7 +165,7 @@ resizeBSImage (mw,mh) bsimg = do
 
 getRatingR :: CoordinationId -> UserId -> Handler RepHtml
 getRatingR cid uid = do
-  (_,_) <- requireAuth
+  requireAuth
   ratingform <- updateRating cid uid
   dispCoordination Nothing Nothing (Just ratingform) cid
 
@@ -175,14 +174,14 @@ postRatingR = getRatingR
 
 getItemR :: CoordinationId -> ItemId -> Handler RepHtml
 getItemR cid iid = do
-  (_,_) <- requireAuth
+  requireAuth
   mi <- runDB $ get iid
   ((res, itemform), _) <- runFormPost $ itemForm cid mi
   case res of
     FormSuccess i -> do
       runDB $ replace iid i
       setMessage "Updated Item"
-      redirect RedirectTemporary $ CoordinationR cid
+      redirect  $ CoordinationR cid
     _ -> return ()
   dispCoordination Nothing (Just itemform) Nothing cid
 
@@ -191,13 +190,13 @@ postItemR = getItemR
 
 getAddItemR ::CoordinationId -> Handler RepHtml
 getAddItemR cid = do
-  (_,_) <- requireAuth
+  requireAuth
   ((res,itemform),_) <- runFormPost $ itemForm cid Nothing
   case res of
     FormSuccess i -> do
       _ <- runDB $ insert i
       setMessage "Added Item"
-      redirect RedirectTemporary $ CoordinationR cid
+      redirect $ CoordinationR cid
     _ -> return ()
   dispCoordination Nothing (Just itemform) Nothing cid
 
@@ -206,6 +205,6 @@ postAddItemR = getAddItemR
 
 postDelItemR :: CoordinationId -> ItemId -> Handler RepPlain
 postDelItemR _ iid = do
-  (_,_) <- requireAuth
+  requireAuth
   runDB $ deleteWhere [ItemId ==. iid]
-  return $ RepPlain $ toContent $ toSinglePiece iid
+  return $ RepPlain $ toContent $ toPathPiece iid

@@ -1,7 +1,7 @@
 Default: &defaults
-  host: "http://localhost"
+  host: "ec2-175-41-201-181.ap-northeast-1.compute.amazonaws.com"
   port: 3000
-  connectionPoolSize: 10
+  copyright: Insert copyright statement here
 
 Development:
   <<: *defaults
@@ -13,4 +13,5 @@ Staging:
   <<: *defaults
 
 Production:
+  approot: "http://www.example.com"
   <<: *defaults

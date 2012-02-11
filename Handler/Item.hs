@@ -4,11 +4,11 @@ import Data.Text (pack)
 
 import Import
 
-itemForm :: CoordinationId -> Maybe Item -> Html -> Form FashionAd FashionAd (FormResult Item, Widget)
+itemForm :: CoordinationId -> Maybe Item -> Form Item
 itemForm cid mi = \html -> do
   (rname, vname) <- mreq textField "name" (fmap itemName mi)
   rcid <- return $ pure cid
-  (rkind, vkind) <- mreq (selectField kinds) "kind" (fmap itemKind mi)
+  (rkind, vkind) <- mreq (selectFieldList kinds) "kind" (fmap itemKind mi)
   (rlink, vlink) <- mopt urlField "link" (fmap itemLink mi)
   (rprice, vprice) <- mopt priceField "price" (fmap itemPrice mi)
   let vs = [vname,vkind,vlink,vprice]

@@ -8,18 +8,18 @@
   <div #item-content>
     <table #item-list .list-table>
       $forall i <- items
-        <tr #item-#{toSinglePiece $ fst i}>
+        <tr #item-#{toPathPiece $ entityKey i}>
           <td>
-            $maybe il <- itemLink $snd i
-              <a href=#{il}>#{itemName $snd i}
+            $maybe il <- itemLink $ entityVal i
+              <a href=#{il}>#{itemName $ entityVal i}
             $nothing
-              #{itemName $snd i}       
-          <td>#{show $ itemKind $ snd i}
+              #{itemName $ entityVal i}       
+          <td>#{show $ itemKind $ entityVal i}
           <td>
-            $maybe ip <- itemPrice $ snd i
+            $maybe ip <- itemPrice $ entityVal i
               #{show ip}
           <td>
-            <a .del-item href="@{DelItemR cid (fst i)}">delete
+            <a .del-item href="@{DelItemR cid (entityKey i)}">delete
     $if isMine
       <div #add-item>
         <form method="post" action=@{AddItemR cid}>

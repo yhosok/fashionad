@@ -6,8 +6,7 @@ import Data.List (genericLength)
 import Import
 import Settings.StaticFiles
 
-ratingForm :: CoordinationId -> UserId -> Maybe Rating -> 
-              Html -> Form FashionAd FashionAd (FormResult Rating, Widget)
+ratingForm :: CoordinationId -> UserId -> Maybe Rating -> Form Rating
 ratingForm cid uid mr= \html -> do
   ruid <- return $ pure uid
   rcid <- return $ pure cid
@@ -26,7 +25,7 @@ rates = map (\x -> (pack $ show x, x)) rateValues
 starField :: (Eq a, Show a) => [(Text, a)] -> Field sub FashionAd a
 starField opts = Field
   { fieldParse = return . starParser
-  , fieldView = \_ nm val _ -> 
+  , fieldView = \_ nm _ val req -> 
       starWidget (op nm) val values isSel
   }
  where
@@ -46,12 +45,12 @@ averageRatingWidget cid = do
   return $ do
     starWidget op (roundVal rs) values isSel
   where
-    roundVal :: [(RatingId, Rating)] -> Int
+    roundVal :: [Entity Rating] -> Int
     roundVal = round . (*) (fromIntegral split') . average . rvs
     average :: [Int] -> Double
     average xs = realToFrac (sum xs) / genericLength xs
-    rvs = map (ratingValue . snd) 
-    nm = append "rating-" . toSinglePiece
+    rvs = map (ratingValue . entityVal) 
+    nm = append "rating-" . toPathPiece
     split' = 4
     values = map (pack . show) [1..(last rateValues * split')]
     isSel v = (==v) . pack . show
@@ -82,19 +81,19 @@ getRatingsR = undefined
 updateRating :: CoordinationId -> UserId -> Handler Widget
 updateRating cid uid = do
   mr <- runDB $ getBy $ UniqueRating uid cid
-  ((res, form), _) <- runFormPost $ ratingForm cid uid (snd <$> mr)
+  ((res, form), _) <- runFormPost $ ratingForm cid uid (entityVal <$> mr)
   case res of
     FormSuccess r -> do
       case mr of 
         Nothing -> do _ <- runDB $ insert  r
                       setMessage "Add Rating"
-        Just (rid,_) -> do runDB $ replace rid r
-                           setMessage "Updated Rating"
-      redirect RedirectTemporary $ CoordinationR cid
+        Just (Entity rid _) -> do runDB $ replace rid r
+                                  setMessage "Updated Rating"
+      redirect $ CoordinationR cid
     _ -> return form
 
 postDelRatingR :: CoordinationId -> RatingId -> Handler RepHtml
 postDelRatingR cid rid = do
-  (_,_) <- requireAuth
+  requireAuth
   runDB $ deleteWhere [RatingId ==. rid]
-  redirect RedirectTemporary $ CoordinationR cid
+  redirect $ CoordinationR cid
