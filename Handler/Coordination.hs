@@ -154,7 +154,7 @@ coordinationImg cid areaSize = do
 
 resizeBSImage :: (Float, Float) -> B.ByteString -> IO B.ByteString
 resizeBSImage (mw,mh) bsimg = do
-  img <- loadJpegByteString bsimg
+  img <- loadJpegByteString bsimg `catch` (\err-> loadGifByteString bsimg)
   (w,h) <- imageSize img
   rimg <- uncurry resizeImage (size w h) $ img 
   saveJpegByteString (-1) rimg

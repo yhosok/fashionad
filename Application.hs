@@ -22,6 +22,8 @@ import qualified Database.Persist.Store
 import Database.Persist.GenericSql (runMigration)
 import Network.HTTP.Conduit (newManager, def)
 
+import Data.Text(pack)
+
 -- Import all relevant handler modules here.
 import Handler.Root
 import Handler.Coordination
@@ -47,7 +49,8 @@ getApplication conf logger = do
               Database.Persist.Store.applyEnv
     p <- Database.Persist.Store.createPoolConfig (dbconf :: Settings.PersistConfig)
     Database.Persist.Store.runPool dbconf (runMigration migrateAll) p
-    let foundation = FashionAd conf setLogger s p manager dbconf
+--    let foundation = FashionAd conf setLogger s p manager dbconf
+    let foundation = FashionAd (conf{appRoot=pack ""}) setLogger s p manager dbconf        
     app <- toWaiAppPlain foundation
     return $ logWare app
   where
