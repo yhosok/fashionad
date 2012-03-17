@@ -4,6 +4,7 @@ Default: &defaults
   copyright: Insert copyright statement here
 
 Development:
+  approot: ""
   <<: *defaults
 
 Test:
