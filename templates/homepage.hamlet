@@ -1,14 +1,14 @@
 <h1>_{MsgFashionAdTitle}
 $maybe u <- mu
-    <p
+    <p>
         You are logged in as #{userIdent $ entityVal u}. #
-        <a href=@{AuthR LogoutR}>Logout
+        <a href=@{AuthR LogoutR}>Logout</a>
         .
-    <p
-        <a href=@{CoordinationsR}>_{MsgCoordinationList}
+    <p>
+        <a href=@{CoordinationsR}>_{MsgCoordinationList}</a>
         <br>
 $nothing
-    <p
+    <p>
         You are not logged in. #
-        <a href=@{AuthR LoginR}>Login now
+        <a href=@{AuthR LoginR}>Login now</a>
         .

@@ -28,7 +28,6 @@ getProfileR = do
       redirect CoordinationsR
     _ -> return ()
   fashionAdLayout uid $ do
-    $(widgetFile "user/form")
     addWidget $(widgetFile "user/profile")
 
 postProfileR :: Handler RepHtml

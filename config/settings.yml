@@ -1,10 +1,10 @@
 Default: &defaults
-  host: "localhost"
+  host: "*4" # any IPv4 host
   port: 3000
   copyright: Insert copyright statement here
 
 Development:
-  approot: ""
+#  approot: ""
   <<: *defaults
 
 Test:
@@ -14,5 +14,5 @@ Staging:
   <<: *defaults
 
 Production:
-  approot: "http://www.example.com"
+#  approot: "http://www.example.com"
   <<: *defaults

@@ -18,7 +18,7 @@ coordForm :: UserId ->
 coordForm uid mc = \html -> do
     ruid <- return $ pure uid
     (rtitle,vtitle) <- mreq textField 
-                       (FieldSettings MsgCoordinationTitle Nothing Nothing Nothing []) 
+                       "Title"
                        (fmap coordinationTitle mc)
     (rdesc,vdesc) <- mopt textareaField "Description" (fmap coordinationDesc mc)
     mfe <- askFiles
@@ -95,7 +95,7 @@ isNothingGenForm :: Form a ->
                     Maybe Widget ->
                     Handler Widget
 isNothingGenForm alt mf = maybe (genForm alt) return mf
-  where genForm form = snd . fst <$> (generateFormPost $ form)
+  where genForm form = fst <$> (generateFormPost $ form)
 
 getCoordinationR :: CoordinationId -> Handler RepHtml
 getCoordinationR cid = do
