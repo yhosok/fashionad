@@ -1,5 +1,5 @@
 <div #user-profile>
-  <p>#{userFullName u}'s Profile
+  <p>_{MsgUserProfile $ userFullName u}
   <table>
     <tbody>
       <tr>

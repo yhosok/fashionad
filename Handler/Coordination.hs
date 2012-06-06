@@ -18,9 +18,11 @@ coordForm :: UserId ->
 coordForm uid mc = \html -> do
     ruid <- return $ pure uid
     (rtitle,vtitle) <- mreq textField 
-                       "Title"
+                       (toSettings MsgCoordinationTitle)
                        (fmap coordinationTitle mc)
-    (rdesc,vdesc) <- mopt textareaField "Description" (fmap coordinationDesc mc)
+    (rdesc,vdesc) <- mopt textareaField
+                     (toSettings MsgCoordinationDesc)
+                     (fmap coordinationDesc mc)
     mfe <- askFiles
     rcoimg <- return $ chkFile mfe
     fmsg <- return $ filemsg rcoimg
@@ -154,7 +156,7 @@ coordinationImg cid areaSize = do
 
 resizeBSImage :: (Float, Float) -> B.ByteString -> IO B.ByteString
 resizeBSImage (mw,mh) bsimg = do
-  img <- loadJpegByteString bsimg `catch` (\err-> loadGifByteString bsimg)
+  img <- loadJpegByteString bsimg
   (w,h) <- imageSize img
   rimg <- uncurry resizeImage (size w h) $ img 
   saveJpegByteString (-1) rimg

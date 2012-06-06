@@ -10,3 +10,20 @@ YourRating: あなたの評価
 CoordinationTitle: タイトル
 MyPage name@Text: #{name} さんのMyPage
 UserList: ユーザ一覧
+ItemName: 名称
+ItemKind: 種別
+ItemLink: リンク
+ItemPrice: 価格
+CoordinationDesc: 説明
+TooSmallPrice: 価格が不正です。
+RateComment: コメント
+UserCoordinations: コーディネート
+UserFollowing: フォロー
+UserFollowers: フォロワー
+UserInfo: ユーザ情報
+YourProfile: あなたの情報
+UserProfile name@Text: #{name} さんの情報
+Login: ログイン
+Logout: ログアウト
+Welcome: ようこそ
+ItIsYourself: これはあなたです

@@ -8,3 +8,4 @@ static/tmp
 *.aes
 .static-cache
 .dist-scion
+*keter*

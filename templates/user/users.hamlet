@@ -6,7 +6,7 @@
           <a href="@{MyPageR (entityKey $ fst $ u)}">#{ident u}
         <td>
           $if isMyInfo u
-            It is yourself.
+            _{MsgItIsYourself}
           $else
             ^{snd u}
 

@@ -11,8 +11,9 @@ ratingForm cid uid mr= \html -> do
   ruid <- return $ pure uid
   rcid <- return $ pure cid
   (rrating, vrating) <- mreq (starField rates) "Rate" (ratingValue <$> mr)
-  liftIO $ print rrating
-  (rcomment, vcomment) <- mopt textareaField "Comment" (ratingComment <$> mr)
+  (rcomment, vcomment) <- mopt textareaField
+                          (toSettings MsgRateComment)
+                          (ratingComment <$> mr)
   return (Rating <$> ruid <*> rcid <*> rrating <*> rcomment, 
           $(widgetFile "coordination/ratingform"))
 
@@ -66,7 +67,7 @@ starWidget op val values isSel = do
   addScript $ StaticR js_jquery_metadata_js
   addScript $ StaticR js_jquery_rating_js
   addStylesheet $ StaticR css_jquery_rating_css
-  addJulius [julius|$.fn.rating.options.required = true;|]
+  toWidget [julius|$.fn.rating.options.required = true;|]
   addWidget [whamlet|\
 $forall v <- values
     <input type="radio" name=#{name op} class=#{clstr} value=#{v} :isDisabled op:disabled :isSel v val:checked>

@@ -6,6 +6,7 @@ module Import
     , Text
     , module Data.Monoid
     , module Control.Applicative
+    , toSettings
     ) where
 
 import Prelude hiding (writeFile, readFile)
@@ -18,3 +19,12 @@ import Data.Text (Text)
 infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
+
+toSettings msg = FieldSettings
+    { fsLabel = SomeMessage msg
+    , fsTooltip = Nothing
+    , fsId = Nothing
+    , fsName = Nothing
+    , fsAttrs = []
+    }
+    

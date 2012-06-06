@@ -1,5 +1,5 @@
 <div #user-info>
-  <p .title>User Info
+  <p .title>_{MsgUserInfo}
   <div #infos>
     $maybe user <- muser
       <p .user-name>
@@ -11,8 +11,8 @@
     $nothing
     <ul .info-list>
       <li>
-        <a href="@{MyPageR uid}">Coordinations (#{coord})
+        <a href="@{MyPageR uid}">_{MsgUserCoordinations} (#{coord})
       <li>
-        <a href="@{FollowingR uid}">Following (#{following})
+        <a href="@{FollowingR uid}">_{MsgUserFollowing} (#{following})
       <li>
-        <a href="@{FollowersR uid}">Followed (#{follower})
+        <a href="@{FollowersR uid}">_{MsgUserFollowers} (#{follower})

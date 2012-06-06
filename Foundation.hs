@@ -50,7 +50,7 @@ import Data.Text (Text)
 import Data.Maybe (isJust)
 import Network.Mail.Mime
 import Text.Shakespeare.Text (stext)
-import Text.Blaze.Renderer.Utf8 (renderHtml)
+import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 import Text.Hamlet (hamletFile,shamlet)
 import Control.Monad (join)
 import qualified Data.Text.Lazy.Encoding

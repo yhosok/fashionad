@@ -2,7 +2,7 @@
   <form method="post" action="@{ProfileR}">
     <fieldset>
       <legend>
-        Your Profile
+        _{MsgYourProfile}
       ^{userform}
     <div .fm-submit>
       <input type="submit" value="Update">

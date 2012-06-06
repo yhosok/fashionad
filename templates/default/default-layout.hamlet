@@ -4,11 +4,11 @@
       <img src=@{StaticR img_logo_gif} alt="FashionAd" .logo>
     <div #secondary_menu>
       $maybe u <- ma
-        <a href=@{ProfileR}>Your Profile
-        <a href=@{AuthR LogoutR}>Logout
-        <a href=@{UserR $ entityKey u}>Welcome #{showFullName $ entityVal u}
+        <a href=@{ProfileR}>_{MsgYourProfile}
+        <a href=@{AuthR LogoutR}>_{MsgLogout}
+        <a href=@{UserR $ entityKey u}>_{MsgWelcome} #{showFullName $ entityVal u}
       $nothing
-        <a href=@{AuthR LoginR}>Login
+        <a href=@{AuthR LoginR}>_{MsgLogin}
   <div #wrapper>
     <div #content>
       $maybe msg <- mmsg
@@ -24,8 +24,6 @@
           <a href=@{AddCoordinationR}>_{MsgAddCoordination}
         <li>
           <a href=@{UsersR}>_{MsgUserList}
-        <li>
-          <a href=@{AuthR LogoutR}>Logout
       <!--div #extra-->
   <div #footer>
     <p>
