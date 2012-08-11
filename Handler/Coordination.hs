@@ -4,6 +4,8 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Control.Monad (forM)
+import Data.Conduit (($$))
+import Data.Conduit.List (consume)
 
 import Graphics.GD
 
@@ -23,20 +25,20 @@ coordForm uid mc = \html -> do
     (rdesc,vdesc) <- mopt textareaField
                      (toSettings MsgCoordinationDesc)
                      (fmap coordinationDesc mc)
-    mfe <- askFiles
-    rcoimg <- return $ chkFile mfe
+    mfi <- lift $ lookupFile "coimg"
+    rcoimg <- lift $ lift $ chkFile mfi
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
             $(widgetFile "coordination/coordform"))
   where 
-    notEmpty = maybe False (not . L.null . fileContent)
-    content = maybe B.empty (B.pack . L.unpack . fileContent)
-    mfi = M.lookup "coimg"
-    chkFile (Just fe) | notEmpty $ mfi fe = pure (content $ mfi fe)
-                      | otherwise = maybe (FormFailure ["missing file"]) 
-                                          (pure . coordinationImage) mc
-    chkFile Nothing = FormMissing
+    chkFile (Just fi) =  do
+      lbs <- L.fromChunks <$> (fileSource fi $$ consume)
+      case (not . L.null $ lbs) of
+        True -> return $ pure (B.pack . L.unpack $ lbs)
+        False -> return $ maybe (FormFailure ["missing file"])
+                                (pure . coordinationImage) mc
+    chkFile Nothing = return FormMissing
     filemsg (FormFailure [a]) = a
     filemsg _ = ""
 
@@ -51,7 +53,7 @@ getMyPageR uid = do
   coordListPage uid [CoordinationUser ==. uid] $ MsgMyPage (toPathPiece uid)
 
 coordListPage :: UserId -> [Filter Coordination] -> 
-                 FashionAdMessage -> Handler RepHtml
+                 AppMessage -> Handler RepHtml
 coordListPage uid fc msgtitle = do
   cs <- runDB $ selectList fc []
   rows <- coordinationList cs

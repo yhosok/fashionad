@@ -1,8 +1,8 @@
 module Foundation
-    ( FashionAd (..)
+    ( App (..)
     , Route (..)
-    , FashionAdMessage (..)
-    , resourcesFashionAd
+    , AppMessage (..)
+    , resourcesApp
     , Handler
     , Widget
     , Form
@@ -10,33 +10,27 @@ module Foundation
     , requireAuth
     , module Settings
     , module Model
+    , getExtra
     ) where
-
 import Prelude
 import Yesod
 import Yesod.Static
-import Settings.StaticFiles
 import Yesod.Auth
-import Yesod.Auth.OpenId
-import Yesod.Auth.Email
 import Yesod.Auth.BrowserId
 import Yesod.Auth.GoogleEmail
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
-import Yesod.Logger (Logger, logMsg, formatLogText)
 import Network.HTTP.Conduit (Manager)
-#ifdef DEVELOPMENT
-import Yesod.Logger (logLazyText)
-#endif
 import qualified Settings
-import qualified Data.ByteString.Lazy as L
 import qualified Database.Persist.Store
+import Settings.StaticFiles
 import Database.Persist.GenericSql
 import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
 import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
+
 #if DEVELOPMENT
 import qualified Data.Text.Lazy.Encoding
 #else
@@ -46,6 +40,7 @@ import Network.Mail.Mime (sendmail)
 import qualified Data.Text as T  
 
 --for email
+import Yesod.Auth.Email
 import Data.Text (Text)
 import Data.Maybe (isJust)
 import Network.Mail.Mime
@@ -54,6 +49,7 @@ import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 import Text.Hamlet (hamletFile,shamlet)
 import Control.Monad (join)
 import qualified Data.Text.Lazy.Encoding
+import qualified Data.ByteString.Lazy as L
 --
 
 import Yesod.Form.Jquery
@@ -63,9 +59,8 @@ import Yesod.Form.I18n.Japanese()
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
-data FashionAd = FashionAd
+data App = App
     { settings :: AppConfig DefaultEnv Extra
-    , getLogger :: Logger
     , getStatic :: Static -- ^ Settings for static file serving.
     , connPool :: Database.Persist.Store.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
     , httpManager :: Manager
@@ -73,7 +68,7 @@ data FashionAd = FashionAd
     }
 
 -- Set up i18n messages. See the message folder.
-mkMessage "FashionAd" "messages" "en"
+mkMessage "App" "messages" "en"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -94,13 +89,13 @@ mkMessage "FashionAd" "messages" "en"
 -- for our application to be in scope. However, the handler functions
 -- usually require access to the FashionAdRoute datatype. Therefore, we
 -- split these actions into two functions and place them in separate files.
-mkYesodData "FashionAd" $(parseRoutesFile "config/routes")
+mkYesodData "App" $(parseRoutesFile "config/routes")
 
-type Form x = Html -> MForm FashionAd FashionAd (FormResult x, Widget)
+type Form x = Html -> MForm App App (FormResult x, Widget)
 
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
-instance Yesod FashionAd where
+instance Yesod App where
     approot = ApprootMaster $ appRoot . settings
 
     -- Store session data on the client in encrypted cookies,
@@ -140,9 +135,6 @@ instance Yesod FashionAd where
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
 
-    messageLogger y loc level msg =
-      formatLogText (getLogger y) loc level msg >>= logMsg (getLogger y)
-
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
@@ -153,8 +145,8 @@ instance Yesod FashionAd where
     jsLoader _ = BottomOfBody
 
 -- How to run database actions.
-instance YesodPersist FashionAd where
-    type YesodPersistBackend FashionAd = SqlPersist
+instance YesodPersist App where
+    type YesodPersistBackend App = SqlPersist
     runDB f = do
         master <- getYesod
         Database.Persist.Store.runPool
@@ -162,8 +154,8 @@ instance YesodPersist FashionAd where
             f
             (connPool master)
 
-instance YesodAuth FashionAd where
-    type AuthId FashionAd = UserId
+instance YesodAuth App where
+    type AuthId App = UserId
 
     -- Where to send a user after successful login
     loginDest _ = RootR
@@ -190,15 +182,15 @@ instance YesodAuth FashionAd where
 --      $(widgetFile "login")
 
 -- Sends off your mail. Requires sendmail in production!
-deliver :: FashionAd -> L.ByteString -> IO ()
+deliver :: App -> L.ByteString -> IO ()
 #ifdef DEVELOPMENT
 deliver y = logLazyText (getLogger y) . Data.Text.Lazy.Encoding.decodeUtf8
 #else
 deliver _ = sendmail
 #endif
 
-instance YesodAuthEmail FashionAd where
-    type AuthEmailId FashionAd = EmailId
+instance YesodAuthEmail App where
+    type AuthEmailId App = EmailId
 
     addUnverified email verkey =
         runDB $ insert $ Email email Nothing $ Just verkey
@@ -270,10 +262,15 @@ Thank you
                 }
     getEmail = runDB . fmap (fmap emailEmail) . get
 
-instance RenderMessage FashionAd FormMessage where
+instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
 
-instance YesodJquery FashionAd
+-- | Get the 'Extra' value, used to hold data from the settings.yml file.
+getExtra :: Handler Extra
+getExtra = fmap (appExtra . settings) getYesod
+
+
+instance YesodJquery App
 
 defaultUser :: Text -> User
 defaultUser ident = User 

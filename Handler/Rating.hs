@@ -1,5 +1,6 @@
 module Handler.Rating where
 
+import Prelude (last)
 import Data.Text (pack, append)
 import Data.List (genericLength)
 
@@ -23,7 +24,7 @@ rateValues = [1..5]
 rates :: [(Text, Int)]
 rates = map (\x -> (pack $ show x, x)) rateValues
 
-starField :: (Eq a, Show a) => [(Text, a)] -> Field sub FashionAd a
+starField :: (Eq a, Show a) => [(Text, a)] -> Field sub App a
 starField opts = Field
   { fieldParse = return . starParser
   , fieldView = \_ nm _ val req -> 
@@ -62,7 +63,7 @@ data StarOptions =  StarOp { name :: Text,
                              split :: Maybe Int }
 
 starWidget :: StarOptions -> a -> [Text] -> (Text -> a -> Bool) -> 
-              GWidget sub FashionAd ()
+              GWidget sub App ()
 starWidget op val values isSel = do
   addScript $ StaticR js_jquery_metadata_js
   addScript $ StaticR js_jquery_rating_js
