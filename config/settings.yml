@@ -2,7 +2,7 @@ Default: &defaults
   host: "*4" # any IPv4 host
   port: 3000
   copyright: Insert copyright statement here
-  approot: "http://ec2-54-248-18-153.ap-northeast-1.compute.amazonaws.com"
+#  approot: "http://ec2-54-248-18-153.ap-northeast-1.compute.amazonaws.com"
 Development:
 #  approot: ""
   <<: *defaults

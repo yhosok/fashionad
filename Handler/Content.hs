@@ -15,7 +15,7 @@ userInfoWidget uid = do
   return $(widgetFile "user/userinfo")
   where isMyInfo = (==uid) . entityKey
 
-fashionAdLayout :: UserId -> Widget -> Handler RepHtml
+fashionAdLayout :: UserId -> Widget -> Handler Html
 fashionAdLayout uid main = do
   sidebar <- userInfoWidget uid
   defaultLayout $ do

@@ -25,40 +25,40 @@ coordForm uid mc = \html -> do
     (rdesc,vdesc) <- mopt textareaField
                      (toSettings MsgCoordinationDesc)
                      (fmap coordinationDesc mc)
-    mfi <- lift $ lookupFile "coimg"
-    rcoimg <- lift $ lift $ chkFile mfi
+    mfi <- lookupFile "coimg"
+    rcoimg <- chkFile mfi
     fmsg <- return $ filemsg rcoimg
     let vs = [vtitle, vdesc]
     return (Coordination <$> ruid <*> rtitle <*> rdesc <*> rcoimg,
             $(widgetFile "coordination/coordform"))
   where 
     chkFile (Just fi) =  do
-      lbs <- L.fromChunks <$> (fileSource fi $$ consume)
-      case (not . L.null $ lbs) of
-        True -> return $ pure (B.pack . L.unpack $ lbs)
+      bss <- fileSource fi $$ consume
+      case (not . null $ bss) of
+        True -> return $ pure (B.concat bss)
         False -> return $ maybe (FormFailure ["missing file"])
                                 (pure . coordinationImage) mc
     chkFile Nothing = return FormMissing
     filemsg (FormFailure [a]) = a
     filemsg _ = ""
 
-getCoordinationsR :: Handler RepHtml
+getCoordinationsR :: Handler Html
 getCoordinationsR = do
   Entity uid _ <- requireAuth
   coordListPage uid [] $ MsgCoordinationTitle
 
-getMyPageR :: UserId -> Handler RepHtml
+getMyPageR :: UserId -> Handler Html
 getMyPageR uid = do
   requireAuth
   coordListPage uid [CoordinationUser ==. uid] $ MsgMyPage (toPathPiece uid)
 
 coordListPage :: UserId -> [Filter Coordination] -> 
-                 AppMessage -> Handler RepHtml
+                 AppMessage -> Handler Html
 coordListPage uid fc msgtitle = do
   cs <- runDB $ selectList fc []
   rows <- coordinationList cs
   fashionAdLayout uid $ do
-    addWidget $(widgetFile "coordination/coordinations") 
+    $(widgetFile "coordination/coordinations") 
 
 coordinationList :: [Entity Coordination] -> Handler Widget
 coordinationList cs = do
@@ -71,13 +71,13 @@ coordinationList cs = do
     ctitle = coordinationTitle . entityVal . fst
     rwidget = snd
     colcnt = 4
-    widget row = addWidget $(widgetFile "coordination/coordlistrow")
+    widget row = $(widgetFile "coordination/coordlistrow")
     toRows xs = case splitAt colcnt xs of
       (ys,[]) ->  ys:[]
       (ys,zs) ->  ys:toRows zs
 
 dispCoordination :: Maybe Widget -> Maybe Widget -> Maybe Widget -> 
-                    CoordinationId -> Handler RepHtml
+                    CoordinationId -> Handler Html
 dispCoordination mcf mif mrf cid= do
   Entity uid u <- requireAuth
   mc <- runDB $ get cid
@@ -93,7 +93,7 @@ dispCoordination mcf mif mrf cid= do
   fashionAdLayout (coordinationUser c) $ do
     let isNew = False
     $(widgetFile "default/form")
-    addWidget $(widgetFile "coordination/coordination")
+    $(widgetFile "coordination/coordination")
 
 isNothingGenForm :: Form a ->
                     Maybe Widget ->
@@ -101,7 +101,7 @@ isNothingGenForm :: Form a ->
 isNothingGenForm alt mf = maybe (genForm alt) return mf
   where genForm form = fst <$> (generateFormPost $ form)
 
-getCoordinationR :: CoordinationId -> Handler RepHtml
+getCoordinationR :: CoordinationId -> Handler Html
 getCoordinationR cid = do
   Entity uid _ <- requireAuth
   mc <- runDB $ get cid
@@ -117,10 +117,10 @@ getCoordinationR cid = do
     _ -> return ()
   dispCoordination (Just coordform) Nothing Nothing cid
 
-postCoordinationR :: CoordinationId -> Handler RepHtml
+postCoordinationR :: CoordinationId -> Handler Html
 postCoordinationR = getCoordinationR
 
-getAddCoordinationR ::Handler RepHtml
+getAddCoordinationR ::Handler Html
 getAddCoordinationR = do
   Entity uid u <- requireAuth
   ((res,coordform),enc) <- runFormPost $ coordForm uid Nothing
@@ -132,12 +132,12 @@ getAddCoordinationR = do
     _ -> return ()
   fashionAdLayout uid $ do
     $(widgetFile "default/form")
-    addWidget $(widgetFile "coordination/newcoordination")
+    $(widgetFile "coordination/newcoordination")
 
-postAddCoordinationR :: Handler RepHtml
+postAddCoordinationR :: Handler Html
 postAddCoordinationR = getAddCoordinationR
 
-postDelCoordinationR :: CoordinationId -> Handler RepHtml
+postDelCoordinationR :: CoordinationId -> Handler Html
 postDelCoordinationR = undefined
 
 
@@ -167,16 +167,16 @@ resizeBSImage (mw,mh) bsimg = do
              | otherwise = (calc w h mh, round mh)
     calc x y ml = round $ (realToFrac x / realToFrac y) * ml
 
-getRatingR :: CoordinationId -> UserId -> Handler RepHtml
+getRatingR :: CoordinationId -> UserId -> Handler Html
 getRatingR cid uid = do
   requireAuth
   ratingform <- updateRating cid uid
   dispCoordination Nothing Nothing (Just ratingform) cid
 
-postRatingR :: CoordinationId -> UserId -> Handler RepHtml
+postRatingR :: CoordinationId -> UserId -> Handler Html
 postRatingR = getRatingR
 
-getItemR :: CoordinationId -> ItemId -> Handler RepHtml
+getItemR :: CoordinationId -> ItemId -> Handler Html
 getItemR cid iid = do
   requireAuth
   mi <- runDB $ get iid
@@ -189,10 +189,10 @@ getItemR cid iid = do
     _ -> return ()
   dispCoordination Nothing (Just itemform) Nothing cid
 
-postItemR :: CoordinationId -> ItemId -> Handler RepHtml
+postItemR :: CoordinationId -> ItemId -> Handler Html
 postItemR = getItemR
 
-getAddItemR ::CoordinationId -> Handler RepHtml
+getAddItemR ::CoordinationId -> Handler Html
 getAddItemR cid = do
   requireAuth
   ((res,itemform),_) <- runFormPost $ itemForm cid Nothing
@@ -204,7 +204,7 @@ getAddItemR cid = do
     _ -> return ()
   dispCoordination Nothing (Just itemform) Nothing cid
 
-postAddItemR :: CoordinationId -> Handler RepHtml
+postAddItemR :: CoordinationId -> Handler Html
 postAddItemR = getAddItemR
 
 postDelItemR :: CoordinationId -> ItemId -> Handler RepPlain

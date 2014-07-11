@@ -4,6 +4,7 @@ User
     fullName Text
     introduction Textarea Maybe
     UniqueUser ident
+    deriving Typeable
 Email
     email Text
     user UserId Maybe Update

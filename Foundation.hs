@@ -18,13 +18,14 @@ import Yesod.Static
 import Yesod.Auth
 import Yesod.Auth.BrowserId
 import Yesod.Auth.GoogleEmail
+import Yesod.Auth.Dummy
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Conduit (Manager)
 import qualified Settings
-import qualified Database.Persist.Store
+import qualified Database.Persist
 import Settings.StaticFiles
-import Database.Persist.GenericSql
+import Database.Persist.Sql (SqlPersistT)
 import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
@@ -50,10 +51,16 @@ import Text.Hamlet (hamletFile,shamlet)
 import Control.Monad (join)
 import qualified Data.Text.Lazy.Encoding
 import qualified Data.ByteString.Lazy as L
+#ifdef DEVELOPMENT
+import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
+--import Yesod.Logger (logLazyText)
+#endif
+
 --
 
 import Yesod.Form.Jquery
 import Yesod.Form.I18n.Japanese()
+import Yesod.Core.Types (Logger)
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -62,9 +69,10 @@ import Yesod.Form.I18n.Japanese()
 data App = App
     { settings :: AppConfig DefaultEnv Extra
     , getStatic :: Static -- ^ Settings for static file serving.
-    , connPool :: Database.Persist.Store.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
+    , connPool :: Database.Persist.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
     , httpManager :: Manager
     , persistConfig :: Settings.PersistConfig
+    , appLogger :: Logger
     }
 
 -- Set up i18n messages. See the message folder.
@@ -91,7 +99,8 @@ mkMessage "App" "messages" "en"
 -- split these actions into two functions and place them in separate files.
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
-type Form x = Html -> MForm App App (FormResult x, Widget)
+--type Form x = Html -> MForm App App (FormResult x, Widget)
+type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
@@ -100,9 +109,9 @@ instance Yesod App where
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
-    makeSessionBackend _ = do
-        key <- getKey "config/client_session_key.aes"
-        return . Just $ clientSessionBackend key 120
+    makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
+            120    -- timeout in minutes
+                    "config/client_session_key.aes"
 
     defaultLayout widget = do
         mmsg <- getMessage
@@ -146,10 +155,10 @@ instance Yesod App where
 
 -- How to run database actions.
 instance YesodPersist App where
-    type YesodPersistBackend App = SqlPersist
+    type YesodPersistBackend App = SqlPersistT
     runDB f = do
         master <- getYesod
-        Database.Persist.Store.runPool
+        Database.Persist.runPool
             (persistConfig master)
             f
             (connPool master)
@@ -170,9 +179,8 @@ instance YesodAuth App where
                 fmap Just $ insert $ defaultUser (credsIdent creds)
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [ --authOpenId
-                      authEmail
-                    , authBrowserId
+    authPlugins _ = [ authDummy
+                    , authEmail
                     , authGoogleEmail
                     ]
     
@@ -184,7 +192,8 @@ instance YesodAuth App where
 -- Sends off your mail. Requires sendmail in production!
 deliver :: App -> L.ByteString -> IO ()
 #ifdef DEVELOPMENT
-deliver y = logLazyText (getLogger y) . Data.Text.Lazy.Encoding.decodeUtf8
+deliver _ = sendmail
+--deliver y = (getLogger y) . Data.Text.Lazy.Encoding.decodeUtf8
 #else
 deliver _ = sendmail
 #endif

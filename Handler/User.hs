@@ -17,7 +17,7 @@ userForm u = renderDivs $ User
   <*> areq textField "Full name" (Just $ userFullName u)
   <*> aopt textareaField "Introduction" (Just $ userIntroduction u)
 
-getProfileR :: Handler RepHtml
+getProfileR :: Handler Html
 getProfileR = do
   Entity uid u <- requireAuth
   ((res,userform),enc) <- runFormPost $ userForm u
@@ -28,12 +28,12 @@ getProfileR = do
       redirect CoordinationsR
     _ -> return ()
   fashionAdLayout uid $ do
-    addWidget $(widgetFile "user/profile")
+    $(widgetFile "user/profile")
 
-postProfileR :: Handler RepHtml
+postProfileR :: Handler Html
 postProfileR = getProfileR
 
-getUserR :: UserId -> Handler RepHtml
+getUserR :: UserId -> Handler Html
 getUserR uid = do
   requireAuth
 -- why internal error from get404 ???
@@ -44,7 +44,7 @@ getUserR uid = do
       Just u -> return u
       Nothing -> notFound
   fashionAdLayout uid $ do
-    addWidget $(widgetFile "user/user")
+    $(widgetFile "user/user")
 
 postFollowR :: Handler RepPlain
 postFollowR = do
@@ -81,24 +81,24 @@ followHelper uid dbop = do
     Nothing -> return $ RepPlain $ toContent T.empty
 --}
 
-getFollowingR :: UserId -> Handler RepHtml
+getFollowingR :: UserId -> Handler Html
 getFollowingR uid = do
   requireAuth
   us <- runDB $ selectList [FollowFollower ==. uid] []
   userListPage uid [UserId <-. (map (followFollowed . entityVal) us)]
 
-getFollowersR :: UserId -> Handler RepHtml
+getFollowersR :: UserId -> Handler Html
 getFollowersR uid = do
   requireAuth
   us <- runDB $ selectList [FollowFollowed ==. uid] []
   userListPage uid [UserId <-. (map (followFollower . entityVal) us)]
 
-getUsersR :: Handler RepHtml
+getUsersR :: Handler Html
 getUsersR = do
   uid <- requireAuthId
   userListPage uid []
   
-userListPage :: UserId -> [Filter User] -> Handler RepHtml
+userListPage :: UserId -> [Filter User] -> Handler Html
 userListPage uid fu = do
   us <- runDB $ selectList fu []  
   users <- forM us $ \user@(Entity uid' _) -> 

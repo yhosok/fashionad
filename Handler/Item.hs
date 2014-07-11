@@ -3,6 +3,7 @@ module Handler.Item where
 import Data.Text (pack)
 
 import Import
+import ModelTypes
 
 itemForm :: CoordinationId -> Maybe Item -> Form Item
 itemForm cid mi = \html -> do
@@ -29,5 +30,5 @@ itemForm cid mi = \html -> do
 kinds :: [(Text, Kind)]
 kinds = map (\x -> (pack $ show x, x)) [minBound..maxBound]
 
-getItemsR :: CoordinationId -> Handler RepHtml
+getItemsR :: CoordinationId -> Handler Html
 getItemsR = undefined

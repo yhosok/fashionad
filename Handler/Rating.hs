@@ -24,9 +24,10 @@ rateValues = [1..5]
 rates :: [(Text, Int)]
 rates = map (\x -> (pack $ show x, x)) rateValues
 
-starField :: (Eq a, Show a) => [(Text, a)] -> Field sub App a
+starField :: (Eq a, Show a) => [(Text, a)] -> Field Handler a
 starField opts = Field
-  { fieldParse = return . starParser
+  { fieldParse = \tx _info -> do
+       return $ starParser tx
   , fieldView = \_ nm _ val req -> 
       starWidget (op nm) val values isSel
   }
@@ -63,13 +64,13 @@ data StarOptions =  StarOp { name :: Text,
                              split :: Maybe Int }
 
 starWidget :: StarOptions -> a -> [Text] -> (Text -> a -> Bool) -> 
-              GWidget sub App ()
+              Widget
 starWidget op val values isSel = do
   addScript $ StaticR js_jquery_metadata_js
   addScript $ StaticR js_jquery_rating_js
   addStylesheet $ StaticR css_jquery_rating_css
   toWidget [julius|$.fn.rating.options.required = true;|]
-  addWidget [whamlet|\
+  [whamlet|\
 $forall v <- values
     <input type="radio" name=#{name op} class=#{clstr} value=#{v} :isDisabled op:disabled :isSel v val:checked>
 |]
@@ -77,7 +78,7 @@ $forall v <- values
     clstr = "star" `append` (maybe "" splitstr (split op))
     splitstr i = " {split:" `append` (pack $ show i) `append` "}"
 
-getRatingsR :: CoordinationId -> Handler RepHtml
+getRatingsR :: CoordinationId -> Handler Html
 getRatingsR = undefined
 
 updateRating :: CoordinationId -> UserId -> Handler Widget
@@ -94,7 +95,7 @@ updateRating cid uid = do
       redirect $ CoordinationR cid
     _ -> return form
 
-postDelRatingR :: CoordinationId -> RatingId -> Handler RepHtml
+postDelRatingR :: CoordinationId -> RatingId -> Handler Html
 postDelRatingR cid rid = do
   requireAuth
   runDB $ deleteWhere [RatingId ==. rid]
