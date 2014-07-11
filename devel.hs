@@ -11,9 +11,7 @@ main :: IO ()
 main = do
     putStrLn "Starting devel application"
     (port, app) <- getApplicationDev
-    forkIO $ runSettings defaultSettings
-        { settingsPort = port
-        } app
+    forkIO $ runSettings (setPort port defaultSettings) app
     loop
 
 loop :: IO ()

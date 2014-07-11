@@ -13,4 +13,4 @@ TAGS
 .cabal-sandbox
 *_flymake.hs
 cabal.sandbox.config
-
+yesod-devel

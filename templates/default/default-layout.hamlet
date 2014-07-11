@@ -19,7 +19,7 @@
       <li>
         <a href=@{CoordinationsR}>
           _{MsgCoordinationList}
-      $maybe u <- ma
+      $maybe _ <- ma
         <li>
           <a href=@{AddCoordinationR}>_{MsgAddCoordination}
         <li>

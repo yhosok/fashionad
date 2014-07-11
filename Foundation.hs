@@ -16,7 +16,7 @@ import Prelude
 import Yesod
 import Yesod.Static
 import Yesod.Auth
-import Yesod.Auth.BrowserId
+--import Yesod.Auth.BrowserId
 import Yesod.Auth.GoogleEmail
 import Yesod.Auth.Dummy
 import Yesod.Default.Config
@@ -29,13 +29,13 @@ import Database.Persist.Sql (SqlPersistT)
 import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
-import Web.ClientSession (getKey)
+--import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
 
 #if DEVELOPMENT
 import qualified Data.Text.Lazy.Encoding
 #else
-import Network.Mail.Mime (sendmail)
+--import Network.Mail.Mime (sendmail)
 #endif
 
 import qualified Data.Text as T  
@@ -47,7 +47,7 @@ import Data.Maybe (isJust)
 import Network.Mail.Mime
 import Text.Shakespeare.Text (stext)
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
-import Text.Hamlet (hamletFile,shamlet)
+--import Text.Hamlet (hamletFile,shamlet)
 import Control.Monad (join)
 import qualified Data.Text.Lazy.Encoding
 import qualified Data.ByteString.Lazy as L
@@ -131,7 +131,7 @@ instance Yesod App where
             $(widgetFile "normalize")
             addStylesheet $ StaticR css_bootstrap_css
             $(widgetFile "default/default-layout")
-        hamletToRepHtml $(hamletFile "templates/default/default-layout-wrapper.hamlet")
+        giveUrlRenderer $(hamletFile "templates/default/default-layout-wrapper.hamlet")
       where showFullName u | T.null (userFullName u) = "<not set yourname>"
                            | otherwise = userFullName u
     
@@ -268,6 +268,7 @@ Thank you
                 , emailCredsAuthId = emailUser e
                 , emailCredsStatus = isJust $ emailUser e
                 , emailCredsVerkey = emailVerkey e
+                , emailCredsEmail = emailEmail e
                 }
     getEmail = runDB . fmap (fmap emailEmail) . get
 

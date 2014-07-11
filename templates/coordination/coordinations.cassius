@@ -1,5 +1,3 @@
-.coord-list
-
 div.coord-list ul
     width: 110px
     margin-right: 10px

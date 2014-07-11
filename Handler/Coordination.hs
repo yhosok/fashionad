@@ -58,7 +58,7 @@ coordListPage uid fc msgtitle = do
   cs <- runDB $ selectList fc []
   rows <- coordinationList cs
   fashionAdLayout uid $ do
-    $(widgetFile "coordination/coordinations") 
+    $(widgetFile "coordination/coordinations")
 
 coordinationList :: [Entity Coordination] -> Handler Widget
 coordinationList cs = do
