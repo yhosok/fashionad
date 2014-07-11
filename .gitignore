@@ -10,3 +10,7 @@ static/tmp
 .dist-scion
 *keter*
 TAGS
+.cabal-sandbox
+*_flymake.hs
+cabal.sandbox.config
+
