@@ -1,122 +1,69 @@
-module Foundation
-    ( App (..)
-    , Route (..)
-    , AppMessage (..)
-    , resourcesApp
-    , Handler
-    , Widget
-    , Form
-    , maybeAuth
-    , requireAuth
-    , module Settings
-    , module Model
-    , getExtra
-    ) where
-import Prelude
-import Yesod
-import Yesod.Static
-import Yesod.Auth
---import Yesod.Auth.BrowserId
+module Foundation where
+
+import Import.NoFoundation
+import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import Text.Hamlet          (hamletFile)
+import Text.Jasmine         (minifym)
+import Yesod.Auth.BrowserId (authBrowserId)
 import Yesod.Auth.GoogleEmail
 import Yesod.Auth.Dummy
-import Yesod.Default.Config
-import Yesod.Default.Util (addStaticContentExternal)
-import Network.HTTP.Conduit (Manager)
-import qualified Settings
-import qualified Database.Persist
-import Settings.StaticFiles
-import Database.Persist.Sql (SqlPersistT)
-import Settings (widgetFile, Extra (..))
-import Model
-import Text.Jasmine (minifym)
---import Web.ClientSession (getKey)
-import Text.Hamlet (hamletFile)
+import Yesod.Default.Util   (addStaticContentExternal)
+import Yesod.Core.Types     (Logger)
+import qualified Yesod.Core.Unsafe as Unsafe
 
-#if DEVELOPMENT
-import qualified Data.Text.Lazy.Encoding
-#else
---import Network.Mail.Mime (sendmail)
-#endif
-
-import qualified Data.Text as T  
+import Yesod.Form.Jquery (YesodJquery (urlJqueryJs, urlJqueryUiJs, urlJqueryUiCss))
+import Data.Text as T
 
 --for email
 import Yesod.Auth.Email
-import Data.Text (Text)
-import Data.Maybe (isJust)
-import Network.Mail.Mime
-import Text.Shakespeare.Text (stext)
-import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
---import Text.Hamlet (hamletFile,shamlet)
-import Control.Monad (join)
-import qualified Data.Text.Lazy.Encoding
-import qualified Data.ByteString.Lazy as L
-#ifdef DEVELOPMENT
-import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
---import Yesod.Logger (logLazyText)
-#endif
-
---
-
-import Yesod.Form.Jquery
-import Yesod.Form.I18n.Japanese()
-import Yesod.Core.Types (Logger)
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
 data App = App
-    { settings :: AppConfig DefaultEnv Extra
-    , getStatic :: Static -- ^ Settings for static file serving.
-    , connPool :: Database.Persist.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
-    , httpManager :: Manager
-    , persistConfig :: Settings.PersistConfig
-    , appLogger :: Logger
+    { appSettings    :: AppSettings
+    , appStatic      :: Static -- ^ Settings for static file serving.
+    , appConnPool    :: ConnectionPool -- ^ Database connection pool.
+    , appHttpManager :: Manager
+    , appLogger      :: Logger
     }
 
--- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
+
+instance HasHttpManager App where
+    getHttpManager = appHttpManager
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
--- http://www.yesodweb.com/book/handler
+-- http://www.yesodweb.com/book/routing-and-handlers
 --
--- This function does three things:
---
--- * Creates the route datatype FashionAdRoute. Every valid URL in your
---   application can be represented as a value of this type.
--- * Creates the associated type:
---       type instance Route FashionAd = FashionAdRoute
--- * Creates the value resourcesFashionAd which contains information on the
---   resources declared below. This is used in Handler.hs by the call to
---   mkYesodDispatch
---
--- What this function does *not* do is create a YesodSite instance for
--- FashionAd. Creating that instance requires all of the handler functions
--- for our application to be in scope. However, the handler functions
--- usually require access to the FashionAdRoute datatype. Therefore, we
--- split these actions into two functions and place them in separate files.
+-- Note that this is really half the story; in Application.hs, mkYesodDispatch
+-- generates the rest of the code. Please see the linked documentation for an
+-- explanation for this split.
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
---type Form x = Html -> MForm App App (FormResult x, Widget)
+-- Set up i18n messages. See the message folder.
+--mkMessage "App" "messages" "en"
+
+-- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod App where
-    approot = ApprootMaster $ appRoot . settings
+    approot = ApprootMaster $ appRoot . appSettings
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
-    makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
-            120    -- timeout in minutes
-                    "config/client_session_key.aes"
+    makeSessionBackend _ = Just <$> defaultClientSessionBackend
+        120    -- timeout in minutes
+        "config/client_session_key.aes"
 
     defaultLayout widget = do
+        master <- getYesod
         mmsg <- getMessage
         ma <- maybeAuth
-        y <- getYesod
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
@@ -125,43 +72,62 @@ instance Yesod App where
         -- you to use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
-            addScriptEither $ urlJqueryJs y
-            addScriptEither $ urlJqueryUiJs y
-            addStylesheetEither $ urlJqueryUiCss y
+            addScriptEither $ urlJqueryJs master
+            addScriptEither $ urlJqueryUiJs master
+            addStylesheetEither $ urlJqueryUiCss master
             $(widgetFile "normalize")
             addStylesheet $ StaticR css_bootstrap_css
             $(widgetFile "default/default-layout")
-        giveUrlRenderer $(hamletFile "templates/default/default-layout-wrapper.hamlet")
+        withUrlRenderer $(hamletFile "templates/default/default-layout-wrapper.hamlet")
       where showFullName u | T.null (userFullName u) = "<not set yourname>"
                            | otherwise = userFullName u
     
-    -- This is done to provide an optimization for serving static files from
-    -- a separate domain. Please see the staticRoot setting in Settings.hs
-    urlRenderOverride y (StaticR s) =
-        Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
-    urlRenderOverride _ _ = Nothing
-
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
+
+    -- Routes not requiring authentication.
+    isAuthorized (AuthR _) _ = return Authorized
+    isAuthorized FaviconR _ = return Authorized
+    isAuthorized RobotsR _ = return Authorized
+    -- Default to Authorized for now.
+    isAuthorized _ _ = return Authorized
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
     -- users receiving stale content.
-    addStaticContent = addStaticContentExternal minifym base64md5 Settings.staticDir (StaticR . flip StaticRoute [])
+    addStaticContent ext mime content = do
+        master <- getYesod
+        let staticDir = appStaticDir $ appSettings master
+        addStaticContentExternal
+            minifym
+            genFileName
+            staticDir
+            (StaticR . flip StaticRoute [])
+            ext
+            mime
+            content
+      where
+        -- Generate a unique filename based on the content itself
+        genFileName lbs = "autogen-" ++ base64md5 lbs
 
-    -- Place Javascript at bottom of the body tag so the rest of the page loads first
-    jsLoader _ = BottomOfBody
+    -- What messages should be logged. The following includes all messages when
+    -- in development, and warnings and errors in production.
+    shouldLog app _source level =
+        appShouldLogAll (appSettings app)
+            || level == LevelWarn
+            || level == LevelError
+
+    makeLogger = return . appLogger
 
 -- How to run database actions.
 instance YesodPersist App where
-    type YesodPersistBackend App = SqlPersistT
-    runDB f = do
+    type YesodPersistBackend App = SqlBackend
+    runDB action = do
         master <- getYesod
-        Database.Persist.runPool
-            (persistConfig master)
-            f
-            (connPool master)
+        runSqlPool action $ appConnPool master
+instance YesodPersistRunner App where
+    getDBRunner = defaultGetDBRunner appConnPool
 
 instance YesodAuth App where
     type AuthId App = UserId
@@ -176,111 +142,29 @@ instance YesodAuth App where
         case x of
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
-                fmap Just $ insert $ defaultUser (credsIdent creds)
+              fmap Just $ insert $ defaultUser (credsIdent creds)
+            --Nothing -> Just <$> insert User
+            --    { userIdent = credsIdent creds
+            --    , userPassword = Nothing
+            --    }
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ authDummy
-                    , authEmail
+--                    , authEmail
                     , authGoogleEmail
                     ]
     
-    authHttpManager = httpManager
+    authHttpManager = getHttpManager
 
---    loginHandler = defaultLayout $ do  
---      $(widgetFile "login")
+instance YesodJquery App
 
--- Sends off your mail. Requires sendmail in production!
-deliver :: App -> L.ByteString -> IO ()
-#ifdef DEVELOPMENT
-deliver _ = sendmail
---deliver y = (getLogger y) . Data.Text.Lazy.Encoding.decodeUtf8
-#else
-deliver _ = sendmail
-#endif
-
-instance YesodAuthEmail App where
-    type AuthEmailId App = EmailId
-
-    addUnverified email verkey =
-        runDB $ insert $ Email email Nothing $ Just verkey
-
-    sendVerifyEmail email _ verurl = do
-        y <- getYesod
-        liftIO $ deliver y =<< renderMail' defmail
-            {
-              mailTo = [Address Nothing email],
-              mailHeaders =
-                [ ("From", "noreply")
-                , ("To", email)
-                , ("Subject", "Verify your email address")
-                ]
-            , mailParts = [[textPart, htmlPart]]
-            }
-      where
-        defmail = emptyMail $ Address Nothing "noreply"
-        textPart = Part
-            { partType = "text/plain; charset=utf-8"
-            , partEncoding = None
-            , partFilename = Nothing
-            , partContent = Data.Text.Lazy.Encoding.encodeUtf8 [stext|
-Please confirm your email address by clicking on the link below.
-
-\#{verurl}
-
-Thank you
-|]
-            , partHeaders = []
-            }
-        htmlPart = Part
-            { partType = "text/html; charset=utf-8"
-            , partEncoding = None
-            , partFilename = Nothing
-            , partContent = renderHtml [shamlet|
-<p>Please confirm your email address by clicking on the link below.
-<p>
-    <a href=#{verurl}>#{verurl}
-<p>Thank you
-|]
-            , partHeaders = []
-            }
-    getVerifyKey = runDB . fmap (join . fmap emailVerkey) . get
-    setVerifyKey eid key = runDB $ update eid [EmailVerkey =. Just key]
-    verifyAccount eid = runDB $ do
-        me <- get eid
-        case me of
-            Nothing -> return Nothing
-            Just e -> do
-                let email = emailEmail e
-                case emailUser e of
-                    Just uid -> return $ Just uid
-                    Nothing -> do
-                        uid <- insert$ defaultUser email
-                        update eid [EmailUser =. Just uid, EmailVerkey =. Nothing]
-                        return $ Just uid
-    getPassword = runDB . fmap (join . fmap userPassword) . get
-    setPassword uid pass = runDB $ update uid [UserPassword =. Just pass]
-    getEmailCreds email = runDB $ do
-        me <- getBy $ UniqueEmail email
-        case me of
-            Nothing -> return Nothing
-            Just (Entity eid e) -> return $ Just EmailCreds
-                { emailCredsId = eid
-                , emailCredsAuthId = emailUser e
-                , emailCredsStatus = isJust $ emailUser e
-                , emailCredsVerkey = emailVerkey e
-                , emailCredsEmail = emailEmail e
-                }
-    getEmail = runDB . fmap (fmap emailEmail) . get
+instance YesodAuthPersist App
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
 
--- | Get the 'Extra' value, used to hold data from the settings.yml file.
-getExtra :: Handler Extra
-getExtra = fmap (appExtra . settings) getYesod
-
-
-instance YesodJquery App
+unsafeHandler :: App -> Handler a -> IO a
+unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 
 defaultUser :: Text -> User
 defaultUser ident = User 
@@ -289,3 +173,11 @@ defaultUser ident = User
                   , userFullName = ""
                   , userIntroduction = Nothing
                   }
+
+toSettings :: RenderMessage master msg => msg -> FieldSettings master
+toSettings msg = FieldSettings
+    { fsLabel = SomeMessage msg
+    , fsId = Nothing
+    , fsName = Nothing
+    , fsAttrs = []
+    }

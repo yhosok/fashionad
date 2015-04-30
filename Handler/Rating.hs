@@ -1,7 +1,7 @@
 module Handler.Rating where
 
-import Prelude (last)
-import Data.Text (pack, append)
+import qualified Prelude (last)
+import Data.Text (append)
 import Data.List (genericLength)
 
 import Import
@@ -55,7 +55,7 @@ averageRatingWidget cid = do
     rvs = map (ratingValue . entityVal) 
     nm = append "rating-" . toPathPiece
     split' = 4
-    values = map (pack . show) [1..(last rateValues * split')]
+    values = map (pack . show) [1..(Prelude.last rateValues * split')]
     isSel v = (==v) . pack . show
     op = StarOp {name = nm cid, isDisabled = True, split = Just split'}
 

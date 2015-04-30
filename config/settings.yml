@@ -1,18 +1,25 @@
-Default: &defaults
-  host: "*4" # any IPv4 host
-  port: 3000
-  copyright: Insert copyright statement here
-#  approot: "http://ec2-54-248-18-153.ap-northeast-1.compute.amazonaws.com"
-Development:
-#  approot: ""
-  <<: *defaults
+# Values formatted like "_env:ENV_VAR_NAME:default_value" can be overridden by the specified environment variable.
+# See https://github.com/yesodweb/yesod/wiki/Configuration#overriding-configuration-values-with-environment-variables
 
-Test:
-  <<: *defaults
+static-dir:     "_env:STATIC_DIR:static"
+host:           "_env:HOST:*4" # any IPv4 host
+port:           "_env:PORT:3000"
+approot:        "_env:APPROOT:"
+ip-from-header: "_env:IP_FROM_HEADER:false"
 
-Staging:
-  <<: *defaults
+# Optional values with the following production defaults.
+# In development, they default to the inverse.
+#
+# development: false
+# detailed-logging: false
+# should-log-all: false
+# reload-templates: false
+# mutable-static: false
+# skip-combining: false
 
-Production:
-#  approot: "http://www.example.com"
-  <<: *defaults
+database:
+  database: "_env:SQLITE_DATABASE:mytest.sqlite3"
+  poolsize: "_env:SQLITE_POOLSIZE:10"
+
+copyright: Insert copyright statement here
+#analytics: UA-YOURCODE
