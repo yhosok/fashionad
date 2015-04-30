@@ -177,6 +177,7 @@ defaultUser ident = User
 toSettings :: RenderMessage master msg => msg -> FieldSettings master
 toSettings msg = FieldSettings
     { fsLabel = SomeMessage msg
+    , fsTooltip = Just $ SomeMessage msg
     , fsId = Nothing
     , fsName = Nothing
     , fsAttrs = []
