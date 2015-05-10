@@ -4,7 +4,7 @@ import Import.NoFoundation
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
-import Yesod.Auth.BrowserId (authBrowserId)
+--import Yesod.Auth.BrowserId (authBrowserId)
 import Yesod.Auth.GoogleEmail
 import Yesod.Auth.Dummy
 import Yesod.Default.Util   (addStaticContentExternal)
@@ -15,7 +15,7 @@ import Yesod.Form.Jquery (YesodJquery (urlJqueryJs, urlJqueryUiJs, urlJqueryUiCs
 import Data.Text as T
 
 --for email
-import Yesod.Auth.Email
+--import Yesod.Auth.Email
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
